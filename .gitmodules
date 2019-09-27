@@ -1,0 +1,15 @@
+[submodule "multibase"]
+	path = multibase
+	url = git@github.com:multiformats/multibase.git
+[submodule "multihash"]
+	path = multihash
+	url = git@github.com:multiformats/multihash.git
+[submodule "multiaddr"]
+	path = multiaddr
+	url = git@github.com:multiformats/multiaddr.git
+[submodule "multicodec"]
+	path = multicodec
+	url = git@github.com:multiformats/multicodec.git
+[submodule "multigram"]
+	path = multigram
+	url = git@github.com:multiformats/multigram.git
