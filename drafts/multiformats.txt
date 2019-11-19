@@ -1,0 +1,1736 @@
+
+
+
+
+Individual Submission                                           J. Snell
+Internet-Draft                                              July 1, 2019
+Intended status: Standards Track
+Expires: January 2, 2020
+
+
+                              Multiformats
+                        draft-snell-multihash-00
+
+Abstract
+
+   Defines Multiformats, a collection of dataformats that aim to future-
+   proof systems by adding self-description to format values; and
+   defines the Multihash and Multibase Multiformat data formats.
+
+Status of This Memo
+
+   This Internet-Draft is submitted to IETF in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on January 2, 2020.
+
+Copyright Notice
+
+   Copyright (c) 2019 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.
+
+
+
+
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 1]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Unsigned Variable Length Integer  . . . . . . . . . . . . . .   3
+     2.1.  Encoding  . . . . . . . . . . . . . . . . . . . . . . . .   3
+     2.2.  Decoding  . . . . . . . . . . . . . . . . . . . . . . . .   5
+     2.3.  ABNF Definition . . . . . . . . . . . . . . . . . . . . .   6
+   3.  Multihash . . . . . . . . . . . . . . . . . . . . . . . . . .   6
+     3.1.  Example Multihashes . . . . . . . . . . . . . . . . . . .   6
+     3.2.  Multihash ABNF  . . . . . . . . . . . . . . . . . . . . .   6
+   4.  Multibase . . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     4.1.  Examples  . . . . . . . . . . . . . . . . . . . . . . . .   7
+     4.2.  Multibase ABNF  . . . . . . . . . . . . . . . . . . . . .   7
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
+     6.1.  The Codec Registry  . . . . . . . . . . . . . . . . . . .   8
+       6.1.1.  Codec Registration  . . . . . . . . . . . . . . . . .   8
+       6.1.2.  Initial Contents  . . . . . . . . . . . . . . . . . .   9
+     6.2.  The Multibase Registry  . . . . . . . . . . . . . . . . .  28
+       6.2.1.  Base-Encoding Registration  . . . . . . . . . . . . .  28
+       6.2.2.  Initial Contents  . . . . . . . . . . . . . . . . . .  29
+   7.  Normative References  . . . . . . . . . . . . . . . . . . . .  30
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  31
+
+1.  Introduction
+
+   Multiformats are a collection of dataformats that aim to future-proof
+   systems by adding self-description to format values; allowing
+   interoperability and protocol agility while avoiding lock in.
+
+   The self-describing aspects of the Multiformat values have a few
+   stipulations:
+
+   o  They MUST be in-band (encoded within and carried with the value).
+
+   o  They MUST avoid lock-in and promote extensibility.
+
+   o  They MUST be compact and have a binary-packed representation.
+
+   o  They MUST have a human-readable representation.
+
+   This specification defines the Multihash and Multibase formats.
+
+   This specification also defines extensible registries for codec and
+   base-encoding identifiers.
+
+   New Multiformat data formats SHOULD be registered within the Codec
+   Registry using the "multiformat" type identifier.
+
+
+
+Snell                    Expires January 2, 2020                [Page 2]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   In this document, the key words "MUST", "MUST NOT", "REQUIRED",
+   "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
+   and "OPTIONAL" are to be interpreted as described in [RFC2119].
+
+   This specification uses the Augmented Backus-Naur Form (ABNF)
+   notation of [RFC5234]
+
+2.  Unsigned Variable Length Integer
+
+   The various Multiformats defined in this specification make use of
+   the Unsigned Variable Length Integer encoding described here.
+
+   As suggested by the name, this variable length encoding is only
+   capable of representing unsigned integers.  Further, while there is
+   no theoretical maximum integer value that can be represented by the
+   format, implementations MUST NOT encode more than nine (9) bytes
+   giving a practical limit of integers in a range between 0 and 2^63 -
+   1.
+
+   Specific Multiformats using the Unsigned Variable Length Integer
+   encoding MAY explicitly declare a more restricted range of encoded
+   values but MUST NOT require values greater than 2^63 - 1.
+
+2.1.  Encoding
+
+   To serialize an integer input using the Unsigned Variable Length
+   Integer Encoding:
+
+   1.  Let output be an empty sequence of bytes.
+
+   2.  Let lsb be a pointer to the least significant bit in the least
+       significant byte of input.
+
+   3.  Let msb be a pointer to either:
+
+       *  The most significant non-zero bit in input such that the
+          number of bits from msb to lsb is a multiple of seven (7), or
+
+       *  The most significant zero-bit following the most significant
+          non-zero bit in input such that the number of bits from msb to
+          lsb is a multiple of seven (7).
+
+   4.  While msb is not equal to lsb and while output has less than nine
+       (9) bytes:
+
+       A.  Let segment be a single byte equal the seven (7) least
+           significant bits starting from lsb.
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 3]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+       B.  Shift lsb left seven (7) bits.
+
+       C.  If msb is not equal to lsb, set the most significant bit of
+           segment to 1 to indicate a continuation.
+
+       D.  Append segment to output.
+
+   Following this algorithm, all integer values between 0 and 127 are
+   encoded as a single byte that is identical to the input.  That is,
+   the value 1 is encoded as 00000001, and the value 127 is encoded as
+   01111111.
+
+   Values greater than 127 require two or more bytes as illustrated in
+   the examples below.
+
+                 +---------+----------------------------+
+                 | Integer | Encoding                   |
+                 +---------+----------------------------+
+                 | 1       | 00000001                   |
+                 | 127     | 01111111                   |
+                 | 128     | 10000000 00000001          |
+                 | 255     | 11111111 00000001          |
+                 | 300     | 10101100 00000010          |
+                 | 16384   | 10000000 10000000 00000001 |
+                 +---------+----------------------------+
+
+   A non-normative example JavaScript implementation of the encoding
+   algorithm is provided for illustration below:
+
+   function encode(input) {
+     if (input <= 127)
+       return new Uint8Array([input]);
+
+     let sequence = new Uint8Array(9);
+     let position = 0;
+
+     while (input > 0 && position < 9) {
+       let value = input & 0x7f;
+       input >>>= 7;
+       if (input > 0) value |= 0x80;
+       sequence[position] = value;
+       position++;
+     }
+
+     return position < 9 ?
+       sequence.slice(0, position) :
+       sequence;
+   }
+
+
+
+Snell                    Expires January 2, 2020                [Page 4]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+2.2.  Decoding
+
+   To deserialize an Unsigned Variable Length Encoded Integer byte-
+   sequence input:
+
+   1.  Let output be a 64-bit integer equal to 0 (zero).
+
+   2.  Let shift be an integer equal to 0 (zero).
+
+   3.  Let continue equal true.
+
+   4.  For each byte of input, while continue equals true and shift is
+       less than nine (9):
+
+       A.  Let continue be false if the most significant bit of byte is
+           0 (zero).
+
+       B.  Let continuation-mask equal the result of performing a
+           bitwise NOT operation on the value 128 (hexidecimal 80).
+
+       C.  Let mask equal the result of performing a bitwise AND
+           operation with the operands byte and continuation-mask.
+
+       D.  Let mask equal the result of shifting the value of mask left
+           shift times 7 (seven) bytes.
+
+       E.  Let output be the result of performing a bitwise XOR
+           operation with the operands output and mask.
+
+       F.  Increment shift by 1.
+
+   A non-normative example JavaScript implementation of the decoding
+   algorithm is provided for illustration below:
+
+   function decode(input) {
+     let output = 0;
+     let shift = 0;
+     let c = true;
+     for (byte of input) {
+       c = !!(byte & 0x80);
+       output |= (byte & ~0x80) << (shift * 7);
+       shift++;
+     }
+     return output;
+   }
+
+
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 5]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+2.3.  ABNF Definition
+
+   Specifications signal use of the Unsigned Variable Length Encoded
+   Integer format by referencing the unsigned-varint ABNF grammar rule
+   defined below.
+
+   varint-terminator = %x00-7f
+   varint-continuation = %x80-ff
+   unsigned-varint = *8varint-continuation varint-terminator
+
+3.  Multihash
+
+   Multihash is a format for differentiating outputs from various well-
+   established cryptographic hash functions while adressing output
+   length and encoding considerations.
+
+   Multihash values encode the hash function output prefixed by an id
+   identifying the hash function encoded as an unsigned variable length
+   integer, and the length of the hash function output encoded as an
+   unsigned variable length integer.  All valid multihash function
+   identifiers are registered in the Codec Registry.
+
+   Multihash values are byte sequences that MAY be encoded in multiple
+   base-encodings including hex, base64, base32, or others.  When
+   representing a multihash using a base-encoding, the Multibase format
+   SHOULD be used.
+
+3.1.  Example Multihashes
+
+   Given the sample text "multihash", the following example multihash
+   values may be generated:
+
+   +--------+----------------------------------------------------------+
+   | Functi | Multihash (Multibase Hex)                                |
+   | on     |                                                          |
+   +--------+----------------------------------------------------------+
+   | sha1   | f111488c2f11fb2ce392acb5b2986e640211c4690073e            |
+   | (0x11) |                                                          |
+   | sha2-2 | f12209cbc07c3f991725836a3aa2a581ca2029198aa420b9d99bc0e1 |
+   | 56     | 31d9f3e2cbe47                                            |
+   | (0x12) |                                                          |
+   +--------+----------------------------------------------------------+
+
+3.2.  Multihash ABNF
+
+
+
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 6]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   Multihash
+
+   hash-function-code = unsigned-varint
+   hash-digest-size = unsigned-varint
+   hash = {hash function output}
+
+   multihash = hash-function-code hash-digest-size hash
+
+4.  Multibase
+
+   Multibase is a format for differentiating outputs from various well-
+   established text base-encoding algorithms.
+
+   A multibase consists simply of a single prefix character that
+   identifies the base-encoding of the remaining characters.  All valid
+   multibase prefix characters are registered in the Multibase Registry.
+
+   The prefix character for each base are selected such that they are
+   included in the alphabets of the base they represent.  For example,
+   "f" is the base code for base16 (hex) because "f" is in hex's 16
+   character alphabet.
+
+4.1.  Examples
+
+   Given the sample text, "Multibase is awesome! \o/", the following
+   example Multibase encodings may be generated.
+
+   +------------+-----------------------------------------------------+
+   | Base       | Multibase                                           |
+   +------------+-----------------------------------------------------+
+   | 16 (upper) | F4D756C74696261736520697320617765736F6D6521205C6F2F |
+   | 16 (lower) | f4d756c74696261736520697320617765736f6d6521205c6f2f |
+   | 32         | BJV2WY5DJMJQXGZJANFZSAYLXMVZW63LFEEQFY3ZP           |
+   | 58         | zYAjKoNbau5KiqmHPmSxYCvn66dA1vLmwbt                 |
+   | 64         | MTXVsdGliYXNlIGlzIGF3ZXNvbWUhIFxvLw==               |
+   +------------+-----------------------------------------------------+
+
+4.2.  Multibase ABNF
+
+   ABNF
+
+   base-identifier =
+   multibase = base-identifier {base-encoded-data}
+
+
+
+
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 7]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+5.  Security Considerations
+
+   There are no additional security considerations introduced by the use
+   of Multiformat data formats.  Note, however, that various hash
+   functions that may be used with multiformats may be vulnerable to
+   various known security issues and limitations (e.g. sha1) and thus
+   SHOULD be avoided.
+
+6.  IANA Considerations
+
+6.1.  The Codec Registry
+
+6.1.1.  Codec Registration
+
+   Codec identifiers can be registered using the procedure described
+   herein.
+
+   Codecs are registered using the Expert Review policy (see Section 4.5
+   of [RFC8126]).  The goal of the registry is to reflect common use of
+   codecs on the Internet.  Therefore, the expert(s) should be strongly
+   biased towards approving registrations, unless they are abusive,
+   frivolous, not likely to be used on the Internet, or actively harmful
+   to the Internet and/or the Web (not merely aesthetically displeasing
+   or architecturally dubious).  Expert(s) can withhold registration of
+   codecs that are too general for the proposal application.
+
+   Expert(s) will clearly identify any issues that cause a registration
+   to be refused.  Advice about the semantics of a proposed codec can be
+   given, but if it does not block registration, this should be
+   explicitly stated.
+
+   When a request if approved, the expert(s) shall inform IANA, and the
+   regstration will be processed.  The IESG is the final arbiter of any
+   objection.
+
+   The Codec Registry is located at https://www.iana.org/assignments/
+   multiformat-codecs.  Registration requests can be made by following
+   instructions located there or by sending an email to the multiformat-
+   codecs@ietf.org mailing list.
+
+   Registration requests consist of at least the following information:
+
+   o  *Codec Name*: The name of codec
+
+   o  *Type*: The type of applicable multiformat
+
+   o  *Code*: The requested identity code
+
+
+
+
+Snell                    Expires January 2, 2020                [Page 8]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   o  *Description*: An optional short text description of the codec.
+
+   o  *Reference*: A reference to the document that specifies the codec,
+      preferably including a URI that can be used to retrieve a copy of
+      the document.  An indication of the relevant section(s) can also
+      be included but is not required.
+
+   The expert(s) can define additional fields to be collected in the
+   registry.
+
+   Registrations SHOULD reference a freely available, stable
+   specification.
+
+   Note that codecs can be registere by third parties (including the
+   expert(s)), if the expert(s) determine that an unregistered codec is
+   widely deployed and not likely to be registered in a timely manner
+   otherwise.  Such registrations still are subject to the requirements
+   defined.
+
+6.1.2.  Initial Contents
+
+   The initial contents of the Codec Registry include:
+
+   +----------------+-----------+---------+------------------+---------+
+   | Name           | Tag       | Code    | Description      | Referen |
+   |                |           |         |                  | ce      |
+   +----------------+-----------+---------+------------------+---------+
+   | identity       | multihash | 0x00    | raw binary       | This do |
+   |                |           |         |                  | cument  |
+   | ip4            | multiaddr | 0x04    |                  | This do |
+   |                |           |         |                  | cument  |
+   | tcp            | multiaddr | 0x06    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha1           | multihash | 0x11    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha2-256       | multihash | 0x12    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha2-512       | multihash | 0x13    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha3-512       | multihash | 0x14    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha3-384       | multihash | 0x15    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha3-256       | multihash | 0x16    |                  | This do |
+   |                |           |         |                  | cument  |
+   | sha3-224       | multihash | 0x17    |                  | This do |
+   |                |           |         |                  | cument  |
+   | shake-128      | multihash | 0x18    |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020                [Page 9]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | shake-256      | multihash | 0x19    |                  | This do |
+   |                |           |         |                  | cument  |
+   | keccak-224     | multihash | 0x1a    | keccak has       | This do |
+   |                |           |         | variable output  | cument  |
+   |                |           |         | length. The      |         |
+   |                |           |         | number specifies |         |
+   |                |           |         | the core length  |         |
+   | keccak-256     | multihash | 0x1b    |                  | This do |
+   |                |           |         |                  | cument  |
+   | keccak-384     | multihash | 0x1c    |                  | This do |
+   |                |           |         |                  | cument  |
+   | keccak-512     | multihash | 0x1d    |                  | This do |
+   |                |           |         |                  | cument  |
+   | dccp           | multiaddr | 0x21    |                  | This do |
+   |                |           |         |                  | cument  |
+   | murmur3-128    | multihash | 0x22    |                  | This do |
+   |                |           |         |                  | cument  |
+   | murmur3-32     | multihash | 0x23    |                  | This do |
+   |                |           |         |                  | cument  |
+   | ip6            | multiaddr | 0x29    |                  | This do |
+   |                |           |         |                  | cument  |
+   | ip6zone        | multiaddr | 0x2a    |                  | This do |
+   |                |           |         |                  | cument  |
+   | path           | namespace | 0x2f    | Namespace for    | This do |
+   |                |           |         | string paths.    | cument  |
+   |                |           |         | Corresponds to / |         |
+   |                |           |         | in ASCII.        |         |
+   | multicodec     | multiform | 0x30    |                  | This do |
+   |                | at        |         |                  | cument  |
+   | multihash      | multiform | 0x31    |                  | This do |
+   |                | at        |         |                  | cument  |
+   | multiaddr      | multiform | 0x32    |                  | This do |
+   |                | at        |         |                  | cument  |
+   | multibase      | multiform | 0x33    |                  | This do |
+   |                | at        |         |                  | cument  |
+   | dns            | multiaddr | 0x35    |                  | This do |
+   |                |           |         |                  | cument  |
+   | dns4           | multiaddr | 0x36    |                  | This do |
+   |                |           |         |                  | cument  |
+   | dns6           | multiaddr | 0x37    |                  | This do |
+   |                |           |         |                  | cument  |
+   | dnsaddr        | multiaddr | 0x38    |                  | This do |
+   |                |           |         |                  | cument  |
+   | protobuf       | serializa | 0x50    | Protocol Buffers | This do |
+   |                | tion      |         |                  | cument  |
+   | cbor           | serializa | 0x51    | CBOR             | This do |
+   |                | tion      |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 10]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | raw            | ipld      | 0x55    | raw binary       | This do |
+   |                |           |         |                  | cument  |
+   | dbl-sha2-256   | multihash | 0x56    |                  | This do |
+   |                |           |         |                  | cument  |
+   | rlp            | serializa | 0x60    | recursive length | This do |
+   |                | tion      |         | prefix           | cument  |
+   | bencode        | serializa | 0x63    | bencode          | This do |
+   |                | tion      |         |                  | cument  |
+   | dag-pb         | ipld      | 0x70    | MerkleDAG        | This do |
+   |                |           |         | protobuf         | cument  |
+   | dag-cbor       | ipld      | 0x71    | MerkleDAG cbor   | This do |
+   |                |           |         |                  | cument  |
+   | libp2p-key     | ipld      | 0x72    | Libp2p Public    | This do |
+   |                |           |         | Key              | cument  |
+   | git-raw        | ipld      | 0x78    | Raw Git object   | This do |
+   |                |           |         |                  | cument  |
+   | torrent-info   | ipld      | 0x7b    | Torrent file     | This do |
+   |                |           |         | info field       | cument  |
+   |                |           |         | (bencoded)       |         |
+   | torrent-file   | ipld      | 0x7c    | Torrent file     | This do |
+   |                |           |         | (bencoded)       | cument  |
+   | leofcoin-block | ipld      | 0x81    | Leofcoin Block   | This do |
+   |                |           |         |                  | cument  |
+   | leofcoin-tx    | ipld      | 0x82    | Leofcoin         | This do |
+   |                |           |         | Transaction      | cument  |
+   | leofcoin-pr    | ipld      | 0x83    | Leofcoin Peer    | This do |
+   |                |           |         | Reputation       | cument  |
+   | sctp           | multiaddr | 0x84    |                  | This do |
+   |                |           |         |                  | cument  |
+   | eth-block      | ipld      | 0x90    | Ethereum Block   | This do |
+   |                |           |         | (RLP)            | cument  |
+   | eth-block-list | ipld      | 0x91    | Ethereum Block   | This do |
+   |                |           |         | List (RLP)       | cument  |
+   | eth-tx-trie    | ipld      | 0x92    | Ethereum         | This do |
+   |                |           |         | Transaction Trie | cument  |
+   |                |           |         | (Eth-Trie)       |         |
+   | eth-tx         | ipld      | 0x93    | Ethereum         | This do |
+   |                |           |         | Transaction      | cument  |
+   |                |           |         | (RLP)            |         |
+   | eth-tx-        | ipld      | 0x94    | Ethereum         | This do |
+   | receipt-trie   |           |         | Transaction      | cument  |
+   |                |           |         | Receipt Trie     |         |
+   |                |           |         | (Eth-Trie)       |         |
+   | eth-tx-receipt | ipld      | 0x95    | Ethereum         | This do |
+   |                |           |         | Transaction      | cument  |
+   |                |           |         | Receipt (RLP)    |         |
+   | eth-state-trie | ipld      | 0x96    | Ethereum State   | This do |
+   |                |           |         | Trie (Eth-       | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 11]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         | Secure-Trie)     |         |
+   | eth-account-   | ipld      | 0x97    | Ethereum Account | This do |
+   | snapshot       |           |         | Snapshot (RLP)   | cument  |
+   | eth-storage-   | ipld      | 0x98    | Ethereum         | This do |
+   | trie           |           |         | Contract Storage | cument  |
+   |                |           |         | Trie (Eth-       |         |
+   |                |           |         | Secure-Trie)     |         |
+   | bitcoin-block  | ipld      | 0xb0    | Bitcoin Block    | This do |
+   |                |           |         |                  | cument  |
+   | bitcoin-tx     | ipld      | 0xb1    | Bitcoin Tx       | This do |
+   |                |           |         |                  | cument  |
+   | zcash-block    | ipld      | 0xc0    | Zcash Block      | This do |
+   |                |           |         |                  | cument  |
+   | zcash-tx       | ipld      | 0xc1    | Zcash Tx         | This do |
+   |                |           |         |                  | cument  |
+   | stellar-block  | ipld      | 0xd0    | Stellar Block    | This do |
+   |                |           |         |                  | cument  |
+   | stellar-tx     | ipld      | 0xd1    | Stellar Tx       | This do |
+   |                |           |         |                  | cument  |
+   | md4            | multihash | 0xd4    |                  | This do |
+   |                |           |         |                  | cument  |
+   | md5            | multihash | 0xd5    |                  | This do |
+   |                |           |         |                  | cument  |
+   | bmt            | multihash | 0xd6    | Binary Merkle    | This do |
+   |                |           |         | Tree Hash        | cument  |
+   | decred-block   | ipld      | 0xe0    | Decred Block     | This do |
+   |                |           |         |                  | cument  |
+   | decred-tx      | ipld      | 0xe1    | Decred Tx        | This do |
+   |                |           |         |                  | cument  |
+   | ipld-ns        | namespace | 0xe2    | IPLD path        | This do |
+   |                |           |         |                  | cument  |
+   | ipfs-ns        | namespace | 0xe3    | IPFS path        | This do |
+   |                |           |         |                  | cument  |
+   | swarm-ns       | namespace | 0xe4    | Swarm path       | This do |
+   |                |           |         |                  | cument  |
+   | ipns-ns        | namespace | 0xe5    | IPNS path        | This do |
+   |                |           |         |                  | cument  |
+   | ed25519-pub    | key       | 0xed    | Ed25519 public   | This do |
+   |                |           |         | key              | cument  |
+   | dash-block     | ipld      | 0xf0    | Dash Block       | This do |
+   |                |           |         |                  | cument  |
+   | dash-tx        | ipld      | 0xf1    | Dash Tx          | This do |
+   |                |           |         |                  | cument  |
+   | swarm-manifest | ipld      | 0xfa    | Swarm Manifest   | This do |
+   |                |           |         |                  | cument  |
+   | swarm-feed     | ipld      | 0xfb    | Swarm Feed       | This do |
+   |                |           |         |                  | cument  |
+   | udp            | multiaddr | 0x0111  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 12]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | p2p-webrtc-    | multiaddr | 0x0113  |                  | This do |
+   | star           |           |         |                  | cument  |
+   | p2p-webrtc-    | multiaddr | 0x0114  |                  | This do |
+   | direct         |           |         |                  | cument  |
+   | p2p-stardust   | multiaddr | 0x0115  |                  | This do |
+   |                |           |         |                  | cument  |
+   | p2p-circuit    | multiaddr | 0x0122  |                  | This do |
+   |                |           |         |                  | cument  |
+   | dag-json       | ipld      | 0x0129  | MerkleDAG json   | This do |
+   |                |           |         |                  | cument  |
+   | udt            | multiaddr | 0x012d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | utp            | multiaddr | 0x012e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | unix           | multiaddr | 0x0190  |                  | This do |
+   |                |           |         |                  | cument  |
+   | p2p            | multiaddr | 0x01a5  | libp2p           | This do |
+   |                |           |         |                  | cument  |
+   | ipfs           | multiaddr | 0x01a5  | libp2p           | This do |
+   |                |           |         | (deprecated)     | cument  |
+   | https          | multiaddr | 0x01bb  |                  | This do |
+   |                |           |         |                  | cument  |
+   | onion          | multiaddr | 0x01bc  |                  | This do |
+   |                |           |         |                  | cument  |
+   | onion3         | multiaddr | 0x01bd  |                  | This do |
+   |                |           |         |                  | cument  |
+   | garlic64       | multiaddr | 0x01be  | I2P base64 (raw  | This do |
+   |                |           |         | public key)      | cument  |
+   | garlic32       | multiaddr | 0x01bf  | I2P base32       | This do |
+   |                |           |         | (hashed public   | cument  |
+   |                |           |         | key or encoded   |         |
+   |                |           |         | public key/check |         |
+   |                |           |         | sum+optional     |         |
+   |                |           |         | secret)          |         |
+   | quic           | multiaddr | 0x01cc  |                  | This do |
+   |                |           |         |                  | cument  |
+   | ws             | multiaddr | 0x01dd  |                  | This do |
+   |                |           |         |                  | cument  |
+   | wss            | multiaddr | 0x01de  |                  | This do |
+   |                |           |         |                  | cument  |
+   | p2p-websocket- | multiaddr | 0x01df  |                  | This do |
+   | star           |           |         |                  | cument  |
+   | http           | multiaddr | 0x01e0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | x11            | multihash | 0x1100  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-8      | multihash | 0xb201  | Blake2b consists | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 13]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         | of 64 output     | cument  |
+   |                |           |         | lengths that     |         |
+   |                |           |         | give different   |         |
+   |                |           |         | hashes           |         |
+   | blake2b-16     | multihash | 0xb202  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-24     | multihash | 0xb203  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-32     | multihash | 0xb204  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-40     | multihash | 0xb205  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-48     | multihash | 0xb206  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-56     | multihash | 0xb207  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-64     | multihash | 0xb208  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-72     | multihash | 0xb209  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-80     | multihash | 0xb20a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-88     | multihash | 0xb20b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-96     | multihash | 0xb20c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-104    | multihash | 0xb20d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-112    | multihash | 0xb20e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-120    | multihash | 0xb20f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-128    | multihash | 0xb210  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-136    | multihash | 0xb211  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-144    | multihash | 0xb212  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-152    | multihash | 0xb213  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-160    | multihash | 0xb214  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-168    | multihash | 0xb215  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-176    | multihash | 0xb216  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-184    | multihash | 0xb217  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 14]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | blake2b-192    | multihash | 0xb218  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-200    | multihash | 0xb219  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-208    | multihash | 0xb21a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-216    | multihash | 0xb21b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-224    | multihash | 0xb21c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-232    | multihash | 0xb21d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-240    | multihash | 0xb21e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-248    | multihash | 0xb21f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-256    | multihash | 0xb220  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-264    | multihash | 0xb221  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-272    | multihash | 0xb222  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-280    | multihash | 0xb223  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-288    | multihash | 0xb224  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-296    | multihash | 0xb225  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-304    | multihash | 0xb226  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-312    | multihash | 0xb227  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-320    | multihash | 0xb228  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-328    | multihash | 0xb229  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-336    | multihash | 0xb22a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-344    | multihash | 0xb22b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-352    | multihash | 0xb22c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-360    | multihash | 0xb22d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-368    | multihash | 0xb22e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-376    | multihash | 0xb22f  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 15]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | blake2b-384    | multihash | 0xb230  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-392    | multihash | 0xb231  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-400    | multihash | 0xb232  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-408    | multihash | 0xb233  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-416    | multihash | 0xb234  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-424    | multihash | 0xb235  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-432    | multihash | 0xb236  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-440    | multihash | 0xb237  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-448    | multihash | 0xb238  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-456    | multihash | 0xb239  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-464    | multihash | 0xb23a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-472    | multihash | 0xb23b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-480    | multihash | 0xb23c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-488    | multihash | 0xb23d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-496    | multihash | 0xb23e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-504    | multihash | 0xb23f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2b-512    | multihash | 0xb240  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-8      | multihash | 0xb241  | Blake2s consists | This do |
+   |                |           |         | of 32 output     | cument  |
+   |                |           |         | lengths that     |         |
+   |                |           |         | give different   |         |
+   |                |           |         | hashes           |         |
+   | blake2s-16     | multihash | 0xb242  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-24     | multihash | 0xb243  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-32     | multihash | 0xb244  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-40     | multihash | 0xb245  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-48     | multihash | 0xb246  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 16]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | blake2s-56     | multihash | 0xb247  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-64     | multihash | 0xb248  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-72     | multihash | 0xb249  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-80     | multihash | 0xb24a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-88     | multihash | 0xb24b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-96     | multihash | 0xb24c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-104    | multihash | 0xb24d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-112    | multihash | 0xb24e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-120    | multihash | 0xb24f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-128    | multihash | 0xb250  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-136    | multihash | 0xb251  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-144    | multihash | 0xb252  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-152    | multihash | 0xb253  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-160    | multihash | 0xb254  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-168    | multihash | 0xb255  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-176    | multihash | 0xb256  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-184    | multihash | 0xb257  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-192    | multihash | 0xb258  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-200    | multihash | 0xb259  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-208    | multihash | 0xb25a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-216    | multihash | 0xb25b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-224    | multihash | 0xb25c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-232    | multihash | 0xb25d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-240    | multihash | 0xb25e  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 17]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | blake2s-248    | multihash | 0xb25f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | blake2s-256    | multihash | 0xb260  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-8     | multihash | 0xb301  | Skein256         | This do |
+   |                |           |         | consists of 32   | cument  |
+   |                |           |         | output lengths   |         |
+   |                |           |         | that give        |         |
+   |                |           |         | different hashes |         |
+   | skein256-16    | multihash | 0xb302  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-24    | multihash | 0xb303  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-32    | multihash | 0xb304  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-40    | multihash | 0xb305  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-48    | multihash | 0xb306  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-56    | multihash | 0xb307  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-64    | multihash | 0xb308  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-72    | multihash | 0xb309  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-80    | multihash | 0xb30a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-88    | multihash | 0xb30b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-96    | multihash | 0xb30c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-104   | multihash | 0xb30d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-112   | multihash | 0xb30e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-120   | multihash | 0xb30f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-128   | multihash | 0xb310  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-136   | multihash | 0xb311  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-144   | multihash | 0xb312  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-152   | multihash | 0xb313  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-160   | multihash | 0xb314  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 18]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein256-168   | multihash | 0xb315  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-176   | multihash | 0xb316  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-184   | multihash | 0xb317  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-192   | multihash | 0xb318  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-200   | multihash | 0xb319  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-208   | multihash | 0xb31a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-216   | multihash | 0xb31b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-224   | multihash | 0xb31c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-232   | multihash | 0xb31d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-240   | multihash | 0xb31e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-248   | multihash | 0xb31f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein256-256   | multihash | 0xb320  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-8     | multihash | 0xb321  | Skein512         | This do |
+   |                |           |         | consists of 64   | cument  |
+   |                |           |         | output lengths   |         |
+   |                |           |         | that give        |         |
+   |                |           |         | different hashes |         |
+   | skein512-16    | multihash | 0xb322  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-24    | multihash | 0xb323  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-32    | multihash | 0xb324  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-40    | multihash | 0xb325  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-48    | multihash | 0xb326  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-56    | multihash | 0xb327  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-64    | multihash | 0xb328  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-72    | multihash | 0xb329  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-80    | multihash | 0xb32a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-88    | multihash | 0xb32b  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 19]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | skein512-96    | multihash | 0xb32c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-104   | multihash | 0xb32d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-112   | multihash | 0xb32e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-120   | multihash | 0xb32f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-128   | multihash | 0xb330  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-136   | multihash | 0xb331  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-144   | multihash | 0xb332  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-152   | multihash | 0xb333  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-160   | multihash | 0xb334  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-168   | multihash | 0xb335  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-176   | multihash | 0xb336  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-184   | multihash | 0xb337  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-192   | multihash | 0xb338  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-200   | multihash | 0xb339  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-208   | multihash | 0xb33a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-216   | multihash | 0xb33b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-224   | multihash | 0xb33c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-232   | multihash | 0xb33d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-240   | multihash | 0xb33e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-248   | multihash | 0xb33f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-256   | multihash | 0xb340  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-264   | multihash | 0xb341  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-272   | multihash | 0xb342  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-280   | multihash | 0xb343  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 20]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | skein512-288   | multihash | 0xb344  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-296   | multihash | 0xb345  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-304   | multihash | 0xb346  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-312   | multihash | 0xb347  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-320   | multihash | 0xb348  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-328   | multihash | 0xb349  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-336   | multihash | 0xb34a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-344   | multihash | 0xb34b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-352   | multihash | 0xb34c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-360   | multihash | 0xb34d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-368   | multihash | 0xb34e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-376   | multihash | 0xb34f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-384   | multihash | 0xb350  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-392   | multihash | 0xb351  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-400   | multihash | 0xb352  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-408   | multihash | 0xb353  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-416   | multihash | 0xb354  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-424   | multihash | 0xb355  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-432   | multihash | 0xb356  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-440   | multihash | 0xb357  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-448   | multihash | 0xb358  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-456   | multihash | 0xb359  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-464   | multihash | 0xb35a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-472   | multihash | 0xb35b  |                  | This do |
+
+
+
+Snell                    Expires January 2, 2020               [Page 21]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         |                  | cument  |
+   | skein512-480   | multihash | 0xb35c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-488   | multihash | 0xb35d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-496   | multihash | 0xb35e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-504   | multihash | 0xb35f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein512-512   | multihash | 0xb360  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-8    | multihash | 0xb361  | Skein1024        | This do |
+   |                |           |         | consists of 128  | cument  |
+   |                |           |         | output lengths   |         |
+   |                |           |         | that give        |         |
+   |                |           |         | different hashes |         |
+   | skein1024-16   | multihash | 0xb362  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-24   | multihash | 0xb363  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-32   | multihash | 0xb364  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-40   | multihash | 0xb365  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-48   | multihash | 0xb366  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-56   | multihash | 0xb367  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-64   | multihash | 0xb368  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-72   | multihash | 0xb369  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-80   | multihash | 0xb36a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-88   | multihash | 0xb36b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-96   | multihash | 0xb36c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-104  | multihash | 0xb36d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-112  | multihash | 0xb36e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-120  | multihash | 0xb36f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-128  | multihash | 0xb370  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-136  | multihash | 0xb371  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 22]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein1024-144  | multihash | 0xb372  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-152  | multihash | 0xb373  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-160  | multihash | 0xb374  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-168  | multihash | 0xb375  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-176  | multihash | 0xb376  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-184  | multihash | 0xb377  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-192  | multihash | 0xb378  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-200  | multihash | 0xb379  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-208  | multihash | 0xb37a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-216  | multihash | 0xb37b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-224  | multihash | 0xb37c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-232  | multihash | 0xb37d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-240  | multihash | 0xb37e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-248  | multihash | 0xb37f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-256  | multihash | 0xb380  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-264  | multihash | 0xb381  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-272  | multihash | 0xb382  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-280  | multihash | 0xb383  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-288  | multihash | 0xb384  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-296  | multihash | 0xb385  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-304  | multihash | 0xb386  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-312  | multihash | 0xb387  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-320  | multihash | 0xb388  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-328  | multihash | 0xb389  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 23]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein1024-336  | multihash | 0xb38a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-344  | multihash | 0xb38b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-352  | multihash | 0xb38c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-360  | multihash | 0xb38d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-368  | multihash | 0xb38e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-376  | multihash | 0xb38f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-384  | multihash | 0xb390  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-392  | multihash | 0xb391  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-400  | multihash | 0xb392  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-408  | multihash | 0xb393  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-416  | multihash | 0xb394  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-424  | multihash | 0xb395  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-432  | multihash | 0xb396  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-440  | multihash | 0xb397  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-448  | multihash | 0xb398  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-456  | multihash | 0xb399  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-464  | multihash | 0xb39a  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-472  | multihash | 0xb39b  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-480  | multihash | 0xb39c  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-488  | multihash | 0xb39d  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-496  | multihash | 0xb39e  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-504  | multihash | 0xb39f  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-512  | multihash | 0xb3a0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-520  | multihash | 0xb3a1  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 24]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein1024-528  | multihash | 0xb3a2  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-536  | multihash | 0xb3a3  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-544  | multihash | 0xb3a4  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-552  | multihash | 0xb3a5  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-560  | multihash | 0xb3a6  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-568  | multihash | 0xb3a7  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-576  | multihash | 0xb3a8  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-584  | multihash | 0xb3a9  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-592  | multihash | 0xb3aa  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-600  | multihash | 0xb3ab  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-608  | multihash | 0xb3ac  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-616  | multihash | 0xb3ad  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-624  | multihash | 0xb3ae  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-632  | multihash | 0xb3af  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-640  | multihash | 0xb3b0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-648  | multihash | 0xb3b1  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-656  | multihash | 0xb3b2  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-664  | multihash | 0xb3b3  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-672  | multihash | 0xb3b4  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-680  | multihash | 0xb3b5  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-688  | multihash | 0xb3b6  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-696  | multihash | 0xb3b7  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-704  | multihash | 0xb3b8  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-712  | multihash | 0xb3b9  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 25]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein1024-720  | multihash | 0xb3ba  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-728  | multihash | 0xb3bb  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-736  | multihash | 0xb3bc  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-744  | multihash | 0xb3bd  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-752  | multihash | 0xb3be  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-760  | multihash | 0xb3bf  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-768  | multihash | 0xb3c0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-776  | multihash | 0xb3c1  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-784  | multihash | 0xb3c2  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-792  | multihash | 0xb3c3  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-800  | multihash | 0xb3c4  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-808  | multihash | 0xb3c5  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-816  | multihash | 0xb3c6  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-824  | multihash | 0xb3c7  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-832  | multihash | 0xb3c8  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-840  | multihash | 0xb3c9  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-848  | multihash | 0xb3ca  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-856  | multihash | 0xb3cb  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-864  | multihash | 0xb3cc  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-872  | multihash | 0xb3cd  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-880  | multihash | 0xb3ce  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-888  | multihash | 0xb3cf  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-896  | multihash | 0xb3d0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-904  | multihash | 0xb3d1  |                  | This do |
+   |                |           |         |                  | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 26]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   | skein1024-912  | multihash | 0xb3d2  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-920  | multihash | 0xb3d3  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-928  | multihash | 0xb3d4  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-936  | multihash | 0xb3d5  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-944  | multihash | 0xb3d6  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-952  | multihash | 0xb3d7  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-960  | multihash | 0xb3d8  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-968  | multihash | 0xb3d9  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-976  | multihash | 0xb3da  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-984  | multihash | 0xb3db  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-992  | multihash | 0xb3dc  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-1000 | multihash | 0xb3dd  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-1008 | multihash | 0xb3de  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-1016 | multihash | 0xb3df  |                  | This do |
+   |                |           |         |                  | cument  |
+   | skein1024-1024 | multihash | 0xb3e0  |                  | This do |
+   |                |           |         |                  | cument  |
+   | holochain-     | holochain | 0x80712 | Holochain v0     | This do |
+   | adr-v0         |           | 4       | address    + 8   | cument  |
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   | holochain-     | holochain | 0x81712 | Holochain v1     | This do |
+   | adr-v1         |           | 4       | address    + 8   | cument  |
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   | holochain-     | holochain | 0x94712 | Holochain v0     | This do |
+   | key-v0         |           | 4       | public key + 8   | cument  |
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   | holochain-     | holochain | 0x95712 | Holochain v1     | This do |
+   | key-v1         |           | 4       | public key + 8   | cument  |
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   | holochain-     | holochain | 0xa2712 | Holochain v0     | This do |
+   | sig-v0         |           | 4       | signature  + 8   | cument  |
+
+
+
+Snell                    Expires January 2, 2020               [Page 27]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   | holochain-     | holochain | 0xa3712 | Holochain v1     | This do |
+   | sig-v1         |           | 4       | signature  + 8   | cument  |
+   |                |           |         | R-S (63 x        |         |
+   |                |           |         | Base-32)         |         |
+   +----------------+-----------+---------+------------------+---------+
+
+6.2.  The Multibase Registry
+
+6.2.1.  Base-Encoding Registration
+
+   Base-encoding identifiers can be registered using the procedure
+   described herein.
+
+   Base-encodings are registered using the Expert Review policy (see
+   Section 4.5 of [RFC8126]).  The goal of the registry is to reflect
+   common use of codecs on the Internet.  Therefore, the expert(s)
+   should be strongly biased towards approving registrations, unless
+   they are abusive, frivolous, not likely to be used on the Internet,
+   or actively harmful to the Internet and/or the Web (not merely
+   aesthetically displeasing or architecturally dubious).  Expert(s) can
+   withhold registration of codecs that are too general for the proposal
+   application.
+
+   Expert(s) will clearly identify any issues that cause a registration
+   to be refused.  Advice about the semantics of a proposed codec can be
+   given, but if it does not block registration, this should be
+   explicitly stated.
+
+   When a request if approved, the expert(s) shall inform IANA, and the
+   regstration will be processed.  The IESG is the final arbiter of any
+   objection.
+
+   The Multibase Registry is located at
+   https://www.iana.org/assignments/multiformat-base.  Registration
+   requests can be made by following instructions located there or by
+   sending an email to the multiformat-codecs@ietf.org mailing list.
+
+   Registration requests consist of at least the following information:
+
+   o  *Name*: The name of base-encoding
+
+   o  *Prefix*: The requested prefix identifier
+
+   o  *Description*: An optional short text description of the base
+      encoding.
+
+
+
+
+Snell                    Expires January 2, 2020               [Page 28]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   o  *Reference*: A reference to the document that specifies the base
+      encoding, preferably including a URI that can be used to retrieve
+      a copy of the document.  An indication of the relevant section(s)
+      can also be included but is not required.
+
+   The expert(s) can define additional fields to be collected in the
+   registry.
+
+   Registrations SHOULD reference a freely available, stable
+   specification.
+
+   Note that base encoding can be registered by third parties (including
+   the expert(s)), if the expert(s) determine that an unregistered base
+   encoding is widely deployed and not likely to be registered in a
+   timely manner otherwise.  Such registrations still are subject to the
+   requirements defined.
+
+6.2.2.  Initial Contents
+
+   The initial contents of the Multibase Registry are as follows:
+
+   +-----------------------+------+------------------------+-----------+
+   | Encoding              | Code | Description            | Reference |
+   +-----------------------+------+------------------------+-----------+
+   | identity              | 0x00 | 8-bit binary (encoder  | This      |
+   |                       |      | and decoder keeps data | Document  |
+   |                       |      | unmodified)            |           |
+   | base2                 | 0    | binary (01010101)      | This      |
+   |                       |      |                        | Document  |
+   | base8                 | 7    | octal                  | This      |
+   |                       |      |                        | Document  |
+   | base10                | 9    | decimal                | This      |
+   |                       |      |                        | Document  |
+   | base16                | f    | hexadecimal            | This      |
+   |                       |      |                        | Document  |
+   | base16upper           | F    | hexadecimal            | This      |
+   |                       |      |                        | Document  |
+   | base32hex             | v    | rfc4648 no padding -   | This      |
+   |                       |      | highest char           | Document  |
+   | base32hexupper        | V    | rfc4648 no padding -   | This      |
+   |                       |      | highest char           | Document  |
+   | base32hexpad          | t    | rfc4648 with padding   | This      |
+   |                       |      |                        | Document  |
+   | base32hexpadupper     | T    | rfc4648 with padding   | This      |
+   |                       |      |                        | Document  |
+   | base32                | b    | rfc4648 no padding     | This      |
+   |                       |      |                        | Document  |
+   | base32upper           | B    | rfc4648 no padding     | This      |
+
+
+
+Snell                    Expires January 2, 2020               [Page 29]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+   |                       |      |                        | Document  |
+   | base32pad             | c    | rfc4648 with padding   | This      |
+   |                       |      |                        | Document  |
+   | base32padupper        | C    | rfc4648 with padding   | This      |
+   |                       |      |                        | Document  |
+   | base32z               | h    | z-base-32 (used by     | This      |
+   |                       |      | Tahoe-LAFS)            | Document  |
+   | base58flickr          | Z    | base58 flicker         | This      |
+   |                       |      |                        | Document  |
+   | base58btc             | z    | base58 bitcoin         | This      |
+   |                       |      |                        | Document  |
+   | base64                | m    | rfc4648 no padding     | This      |
+   |                       |      |                        | Document  |
+   | base64pad             | M    | rfc4648 with padding - | This      |
+   |                       |      | MIME encoding          | Document  |
+   | base64url             | u    | rfc4648 no padding     | This      |
+   |                       |      |                        | Document  |
+   | base64urlpad          | U    | rfc4648 with padding   | This      |
+   |                       |      |                        | Document  |
+   | base58libp2p-identity | 1    | Base58 encoded         | This      |
+   |                       |      | identity multihashes   | Document  |
+   |                       |      | used by libp2p         |           |
+   | base58libp2p-sha2     | Q    | Base58 encoded         | This      |
+   |                       |      | sha2-256 multihashes   | Document  |
+   |                       |      | used by libp2p         |           |
+   +-----------------------+------+------------------------+-----------+
+
+7.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC5234]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
+              Specifications: ABNF", STD 68, RFC 5234,
+              DOI 10.17487/RFC5234, January 2008,
+              <https://www.rfc-editor.org/info/rfc5234>.
+
+   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
+              Writing an IANA Considerations Section in RFCs", BCP 26,
+              RFC 8126, DOI 10.17487/RFC8126, June 2017,
+              <https://www.rfc-editor.org/info/rfc8126>.
+
+
+
+
+
+
+
+
+Snell                    Expires January 2, 2020               [Page 30]
+
+Internet-Draft                Multiformats                     July 2019
+
+
+Author's Address
+
+   James M Snell
+
+   Email: jasnell@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Snell                    Expires January 2, 2020               [Page 31]
