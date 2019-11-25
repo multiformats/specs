@@ -1,0 +1,401 @@
+        <texttable>
+          <ttcol>Name</ttcol>
+          <ttcol>Tag</ttcol>
+          <ttcol>Code</ttcol>
+          <ttcol>Description</ttcol>
+
+          <c>ip4</c>
+          <c>multiaddr</c>
+          <c>0x04</c>
+          <c></c>
+
+          <c>tcp</c>
+          <c>multiaddr</c>
+          <c>0x06</c>
+          <c></c>
+
+          <c>dccp</c>
+          <c>multiaddr</c>
+          <c>0x21</c>
+          <c></c>
+
+          <c>ip6</c>
+          <c>multiaddr</c>
+          <c>0x29</c>
+          <c></c>
+
+          <c>ip6zone</c>
+          <c>multiaddr</c>
+          <c>0x2a</c>
+          <c></c>
+
+          <c>path</c>
+          <c>namespace</c>
+          <c>0x2f</c>
+          <c>Namespace for string paths. Corresponds to / in ASCII.</c>
+
+          <c>multiaddr</c>
+          <c>multiformat</c>
+          <c>0x32</c>
+          <c></c>
+
+          <c>dns</c>
+          <c>multiaddr</c>
+          <c>0x35</c>
+          <c></c>
+
+          <c>dns4</c>
+          <c>multiaddr</c>
+          <c>0x36</c>
+          <c></c>
+
+          <c>dns6</c>
+          <c>multiaddr</c>
+          <c>0x37</c>
+          <c></c>
+
+          <c>dnsaddr</c>
+          <c>multiaddr</c>
+          <c>0x38</c>
+          <c></c>
+
+          <c>protobuf</c>
+          <c>serialization</c>
+          <c>0x50</c>
+          <c>Protocol Buffers</c>
+
+          <c>cbor</c>
+          <c>serialization</c>
+          <c>0x51</c>
+          <c>CBOR</c>
+
+          <c>raw</c>
+          <c>ipld</c>
+          <c>0x55</c>
+          <c>raw binary</c>
+
+          <c>rlp</c>
+          <c>serialization</c>
+          <c>0x60</c>
+          <c>recursive length prefix</c>
+
+          <c>bencode</c>
+          <c>serialization</c>
+          <c>0x63</c>
+          <c>bencode</c>
+
+          <c>dag-pb</c>
+          <c>ipld</c>
+          <c>0x70</c>
+          <c>MerkleDAG protobuf</c>
+
+          <c>dag-cbor</c>
+          <c>ipld</c>
+          <c>0x71</c>
+          <c>MerkleDAG cbor</c>
+
+          <c>libp2p-key</c>
+          <c>ipld</c>
+          <c>0x72</c>
+          <c>Libp2p Public Key</c>
+
+          <c>git-raw</c>
+          <c>ipld</c>
+          <c>0x78</c>
+          <c>Raw Git object</c>
+
+          <c>torrent-info</c>
+          <c>ipld</c>
+          <c>0x7b</c>
+          <c>Torrent file info field (bencoded)</c>
+
+          <c>torrent-file</c>
+          <c>ipld</c>
+          <c>0x7c</c>
+          <c>Torrent file (bencoded)</c>
+
+          <c>leofcoin-block</c>
+          <c>ipld</c>
+          <c>0x81</c>
+          <c>Leofcoin Block</c>
+
+          <c>leofcoin-tx</c>
+          <c>ipld</c>
+          <c>0x82</c>
+          <c>Leofcoin Transaction</c>
+
+          <c>leofcoin-pr</c>
+          <c>ipld</c>
+          <c>0x83</c>
+          <c>Leofcoin Peer Reputation</c>
+
+          <c>sctp</c>
+          <c>multiaddr</c>
+          <c>0x84</c>
+          <c></c>
+
+          <c>eth-block</c>
+          <c>ipld</c>
+          <c>0x90</c>
+          <c>Ethereum Block (RLP)</c>
+
+          <c>eth-block-list</c>
+          <c>ipld</c>
+          <c>0x91</c>
+          <c>Ethereum Block List (RLP)</c>
+
+          <c>eth-tx-trie</c>
+          <c>ipld</c>
+          <c>0x92</c>
+          <c>Ethereum Transaction Trie (Eth-Trie)</c>
+
+          <c>eth-tx</c>
+          <c>ipld</c>
+          <c>0x93</c>
+          <c>Ethereum Transaction (RLP)</c>
+
+          <c>eth-tx-receipt-trie</c>
+          <c>ipld</c>
+          <c>0x94</c>
+          <c>Ethereum Transaction Receipt Trie (Eth-Trie)</c>
+
+          <c>eth-tx-receipt</c>
+          <c>ipld</c>
+          <c>0x95</c>
+          <c>Ethereum Transaction Receipt (RLP)</c>
+
+          <c>eth-state-trie</c>
+          <c>ipld</c>
+          <c>0x96</c>
+          <c>Ethereum State Trie (Eth-Secure-Trie)</c>
+
+          <c>eth-account-snapshot</c>
+          <c>ipld</c>
+          <c>0x97</c>
+          <c>Ethereum Account Snapshot (RLP)</c>
+
+          <c>eth-storage-trie</c>
+          <c>ipld</c>
+          <c>0x98</c>
+          <c>Ethereum Contract Storage Trie (Eth-Secure-Trie)</c>
+
+          <c>bitcoin-block</c>
+          <c>ipld</c>
+          <c>0xb0</c>
+          <c>Bitcoin Block</c>
+
+          <c>bitcoin-tx</c>
+          <c>ipld</c>
+          <c>0xb1</c>
+          <c>Bitcoin Tx</c>
+
+          <c>zcash-block</c>
+          <c>ipld</c>
+          <c>0xc0</c>
+          <c>Zcash Block</c>
+
+          <c>zcash-tx</c>
+          <c>ipld</c>
+          <c>0xc1</c>
+          <c>Zcash Tx</c>
+
+          <c>stellar-block</c>
+          <c>ipld</c>
+          <c>0xd0</c>
+          <c>Stellar Block</c>
+
+          <c>stellar-tx</c>
+          <c>ipld</c>
+          <c>0xd1</c>
+          <c>Stellar Tx</c>
+
+          <c>decred-block</c>
+          <c>ipld</c>
+          <c>0xe0</c>
+          <c>Decred Block</c>
+
+          <c>decred-tx</c>
+          <c>ipld</c>
+          <c>0xe1</c>
+          <c>Decred Tx</c>
+
+          <c>ipld-ns</c>
+          <c>namespace</c>
+          <c>0xe2</c>
+          <c>IPLD path</c>
+
+          <c>ipfs-ns</c>
+          <c>namespace</c>
+          <c>0xe3</c>
+          <c>IPFS path</c>
+
+          <c>swarm-ns</c>
+          <c>namespace</c>
+          <c>0xe4</c>
+          <c>Swarm path</c>
+
+          <c>ipns-ns</c>
+          <c>namespace</c>
+          <c>0xe5</c>
+          <c>IPNS path</c>
+
+          <c>ed25519-pub</c>
+          <c>key</c>
+          <c>0xed</c>
+          <c>Ed25519 public key</c>
+
+          <c>dash-block</c>
+          <c>ipld</c>
+          <c>0xf0</c>
+          <c>Dash Block</c>
+
+          <c>dash-tx</c>
+          <c>ipld</c>
+          <c>0xf1</c>
+          <c>Dash Tx</c>
+
+          <c>swarm-manifest</c>
+          <c>ipld</c>
+          <c>0xfa</c>
+          <c>Swarm Manifest</c>
+
+          <c>swarm-feed</c>
+          <c>ipld</c>
+          <c>0xfb</c>
+          <c>Swarm Feed</c>
+
+          <c>udp</c>
+          <c>multiaddr</c>
+          <c>0x0111</c>
+          <c></c>
+
+          <c>p2p-webrtc-star</c>
+          <c>multiaddr</c>
+          <c>0x0113</c>
+          <c></c>
+
+          <c>p2p-webrtc-direct</c>
+          <c>multiaddr</c>
+          <c>0x0114</c>
+          <c></c>
+
+          <c>p2p-stardust</c>
+          <c>multiaddr</c>
+          <c>0x0115</c>
+          <c></c>
+
+          <c>p2p-circuit</c>
+          <c>multiaddr</c>
+          <c>0x0122</c>
+          <c></c>
+
+          <c>dag-json</c>
+          <c>ipld</c>
+          <c>0x0129</c>
+          <c>MerkleDAG json</c>
+
+          <c>udt</c>
+          <c>multiaddr</c>
+          <c>0x012d</c>
+          <c></c>
+
+          <c>utp</c>
+          <c>multiaddr</c>
+          <c>0x012e</c>
+          <c></c>
+
+          <c>unix</c>
+          <c>multiaddr</c>
+          <c>0x0190</c>
+          <c></c>
+
+          <c>p2p</c>
+          <c>multiaddr</c>
+          <c>0x01a5</c>
+          <c>libp2p</c>
+
+          <c>ipfs</c>
+          <c>multiaddr</c>
+          <c>0x01a5</c>
+          <c>libp2p (deprecated)</c>
+
+          <c>https</c>
+          <c>multiaddr</c>
+          <c>0x01bb</c>
+          <c></c>
+
+          <c>onion</c>
+          <c>multiaddr</c>
+          <c>0x01bc</c>
+          <c></c>
+
+          <c>onion3</c>
+          <c>multiaddr</c>
+          <c>0x01bd</c>
+          <c></c>
+
+          <c>garlic64</c>
+          <c>multiaddr</c>
+          <c>0x01be</c>
+          <c>I2P base64 (raw public key)</c>
+
+          <c>garlic32</c>
+          <c>multiaddr</c>
+          <c>0x01bf</c>
+          <c>I2P base32 (hashed public key or encoded public key/checksum+optional secret)</c>
+
+          <c>quic</c>
+          <c>multiaddr</c>
+          <c>0x01cc</c>
+          <c></c>
+
+          <c>ws</c>
+          <c>multiaddr</c>
+          <c>0x01dd</c>
+          <c></c>
+
+          <c>wss</c>
+          <c>multiaddr</c>
+          <c>0x01de</c>
+          <c></c>
+
+          <c>p2p-websocket-star</c>
+          <c>multiaddr</c>
+          <c>0x01df</c>
+          <c></c>
+
+          <c>http</c>
+          <c>multiaddr</c>
+          <c>0x01e0</c>
+          <c></c>
+
+          <c>holochain-adr-v0</c>
+          <c>holochain</c>
+          <c>0x807124</c>
+          <c>Holochain v0 address    + 8 R-S (63 x Base-32)</c>
+
+          <c>holochain-adr-v1</c>
+          <c>holochain</c>
+          <c>0x817124</c>
+          <c>Holochain v1 address    + 8 R-S (63 x Base-32)</c>
+
+          <c>holochain-key-v0</c>
+          <c>holochain</c>
+          <c>0x947124</c>
+          <c>Holochain v0 public key + 8 R-S (63 x Base-32)</c>
+
+          <c>holochain-key-v1</c>
+          <c>holochain</c>
+          <c>0x957124</c>
+          <c>Holochain v1 public key + 8 R-S (63 x Base-32)</c>
+
+          <c>holochain-sig-v0</c>
+          <c>holochain</c>
+          <c>0xa27124</c>
+          <c>Holochain v0 signature  + 8 R-S (63 x Base-32)</c>
+
+          <c>holochain-sig-v1</c>
+          <c>holochain</c>
+          <c>0xa37124</c>
+          <c>Holochain v1 signature  + 8 R-S (63 x Base-32)</c>
+        </texttable>

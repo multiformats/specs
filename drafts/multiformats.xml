@@ -15,7 +15,10 @@
       Multiformats
     </title>
 
-    <author initials="J.M." surname="Snell" fullname="James M Snell">
+    <author initials="J.M."
+            surname="Snell"
+            fullname="James M Snell"
+            role="editor">
       <address>
         <email>jasnell@gmail.com</email>
       </address>
@@ -98,7 +101,8 @@
 
     <t>
       The various Multiformats defined in this specification make use of the
-      Unsigned Variable Length Integer encoding described here.
+      Unsigned Variable Length Integer encoding defined in Appendix C of the
+      <xref target="DWARF3" /> standard.
     </t>
 
     <t>
@@ -116,177 +120,27 @@
       values but MUST NOT require values greater than 2^63 - 1.
     </t>
 
-    <section title="Encoding">
+    <t>
+      All integer values between 0 and 127 are encoded as a single byte that
+      is identical to the input. That is, the value 1 is encoded as 00000001,
+      and the value 127 is encoded as 01111111.
+    </t>
 
-      <t>
-        To serialize an integer input using the Unsigned Variable Length Integer
-        Encoding:
-        <list style="numbers">
-          <t>
-            Let output be an empty sequence of bytes.
-          </t>
-          <t>
-            Let lsb be a pointer to the least significant bit in the least
-            significant byte of input.
-          </t>
-          <t>
-            Let msb be a pointer to either:
-            <list style="symbols">
-              <t>
-                The most significant non-zero bit in input such that
-                the number of bits from msb to lsb is a multiple of seven (7), or
-              </t>
-              <t>
-                The most significant zero-bit following the most significant
-                non-zero bit in input such that the number of bits from msb
-                to lsb is a multiple of seven (7).
-              </t>
-            </list>
-          </t>
-          <t>
-            While msb is not equal to lsb and while output has less than nine
-            (9) bytes:
-            <list style="letters">
-              <t>
-                Let segment be a single byte equal the seven (7) least
-                significant bits starting from lsb.
-              </t>
-              <t>
-                Shift lsb left seven (7) bits.
-              </t>
-              <t>
-                If msb is not equal to lsb, set the most significant bit of
-                segment to 1 to indicate a continuation.
-              </t>
-              <t>
-                Append segment to output.
-              </t>
-            </list>
-          </t>
-        </list>
-      </t>
+    <t>
+      Values greater than 127 require two or more bytes as illustrated
+      in the examples below.
+    </t>
 
-      <t>
-        Following this algorithm, all integer values between 0 and 127 are
-        encoded as a single byte that is identical to the input. That is,
-        the value 1 is encoded as 00000001, and the value 127 is encoded
-        as 01111111.
-      </t>
-
-      <t>
-        Values greater than 127 require two or more bytes as illustrated
-        in the examples below.
-      </t>
-
-      <texttable>
-        <ttcol>Integer</ttcol>
-        <ttcol>Encoding</ttcol>
-        <c>1</c><c>00000001</c>
-        <c>127</c><c>01111111</c>
-        <c>128</c><c>10000000 00000001</c>
-        <c>255</c><c>11111111 00000001</c>
-        <c>300</c><c>10101100 00000010</c>
-        <c>16384</c><c>10000000 10000000 00000001</c>
-      </texttable>
-
-      <t>
-        A non-normative example JavaScript implementation of the encoding
-        algorithm is provided for illustration below:
-      </t>
-
-<figure><preamble></preamble>
-<artwork><![CDATA[
-function encode(input) {
-  if (input <= 127)
-    return new Uint8Array([input]);
-
-  let sequence = new Uint8Array(9);
-  let position = 0;
-
-  while (input > 0 && position < 9) {
-    let value = input & 0x7f;
-    input >>>= 7;
-    if (input > 0) value |= 0x80;
-    sequence[position] = value;
-    position++;
-  }
-
-  return position < 9 ?
-    sequence.slice(0, position) :
-    sequence;
-}
-]]></artwork></figure>
-
-    </section>
-
-    <section title="Decoding">
-
-      <t>
-        To deserialize an Unsigned Variable Length Encoded Integer
-        byte-sequence input:
-        <list style="numbers">
-          <t>
-            Let output be a 64-bit integer equal to 0 (zero).
-          </t>
-          <t>
-            Let shift be an integer equal to 0 (zero).
-          </t>
-          <t>
-            Let continue equal true.
-          </t>
-          <t>
-            For each byte of input, while continue equals true and shift is
-            less than nine (9):
-            <list style="letters">
-              <t>
-                Let continue be false if the most significant bit of byte is
-                0 (zero).
-              </t>
-              <t>
-                Let continuation-mask equal the result of performing a bitwise
-                NOT operation on the value 128 (hexidecimal 80).
-              </t>
-              <t>
-                Let mask equal the result of performing a bitwise AND operation
-                with the operands byte and continuation-mask.
-              </t>
-              <t>
-                Let mask equal the result of shifting the value of mask left
-                shift times 7 (seven) bytes.
-              </t>
-              <t>
-                Let output be the result of performing a bitwise XOR operation
-                with the operands output and mask.
-              </t>
-              <t>
-                Increment shift by 1.
-              </t>
-            </list>
-          </t>
-        </list>
-      </t>
-
-      <t>
-        A non-normative example JavaScript implementation of the decoding
-        algorithm is provided for illustration below:
-      </t>
-
-<figure><preamble></preamble>
-<artwork><![CDATA[
-function decode(input) {
-  let output = 0;
-  let shift = 0;
-  let c = true;
-  for (byte of input) {
-    c = !!(byte & 0x80);
-    output |= (byte & ~0x80) << (shift * 7);
-    shift++;
-  }
-  return output;
-}
-]]></artwork></figure>
-
-    </section>
+    <texttable>
+      <ttcol>Integer</ttcol>
+      <ttcol>Encoding</ttcol>
+      <c>1</c><c>00000001</c>
+      <c>127</c><c>01111111</c>
+      <c>128</c><c>10000000 00000001</c>
+      <c>255</c><c>11111111 00000001</c>
+      <c>300</c><c>10101100 00000010</c>
+      <c>16384</c><c>10000000 10000000 00000001</c>
+    </texttable>
 
     <section title="ABNF Definition">
 
@@ -301,61 +155,6 @@ function decode(input) {
 varint-terminator = %x00-7f
 varint-continuation = %x80-ff
 unsigned-varint = *8varint-continuation varint-terminator
-]]></artwork></figure>
-    </section>
-
-  </section>
-
-  <section title="Multihash" anchor="multihash">
-
-    <t>
-      Multihash is a format for differentiating outputs from various
-      well-established cryptographic hash functions while adressing
-      output length and encoding considerations.
-    </t>
-
-    <t>
-      Multihash values encode the hash function output prefixed by an
-      id identifying the hash function encoded as an unsigned variable
-      length integer, and the length of the hash function output encoded
-      as an unsigned variable length integer. All valid multihash function
-      identifiers are registered in the Codec Registry.
-    </t>
-
-    <t>
-      Multihash values are byte sequences that MAY be encoded in multiple
-      base-encodings including hex, base64, base32, or others. When
-      representing a multihash using a base-encoding, the Multibase format
-      SHOULD be used.
-    </t>
-
-    <section title="Example Multihashes">
-
-      <t>
-        Given the sample text "multihash", the following example
-        multihash values may be generated:
-      </t>
-
-      <texttable>
-        <ttcol>Function</ttcol>
-        <ttcol>Multihash (Multibase Hex)</ttcol>
-
-        <c>sha1 (0x11)</c>
-        <c>f111488c2f11fb2ce392acb5b2986e640211c4690073e</c>
-
-        <c>sha2-256 (0x12)</c>
-        <c>f12209cbc07c3f991725836a3aa2a581ca2029198aa420b9d99bc0e131d9f3e2cbe47</c>
-      </texttable>
-    </section>
-
-    <section title="Multihash ABNF">
-<figure><preamble>Multihash</preamble>
-<artwork><![CDATA[
-hash-function-code = unsigned-varint
-hash-digest-size = unsigned-varint
-hash = {hash function output}
-
-multihash = hash-function-code hash-digest-size hash
 ]]></artwork></figure>
     </section>
 
@@ -408,8 +207,66 @@ multihash = hash-function-code hash-digest-size hash
     <section title="Multibase ABNF">
 <figure><preamble>ABNF</preamble>
 <artwork><![CDATA[
-base-identifier =
+base-identifier = <ascii character>
 multibase = base-identifier {base-encoded-data}
+]]></artwork></figure>
+    </section>
+
+  </section>
+
+  <section title="Multihash" anchor="multihash">
+
+    <t>
+      Multihash is a format for differentiating outputs from various
+      well-established cryptographic hash functions while adressing
+      output length and encoding considerations.
+    </t>
+
+    <t>
+      Multihash values encode the hash function output prefixed by an
+      id identifying the hash function encoded as an unsigned variable
+      length integer, and the length of the hash function output encoded
+      as an unsigned variable length integer. All valid multihash function
+      identifiers are registered in the Codec Registry.
+    </t>
+
+    <t>
+      Multihash values are byte sequences that MAY be encoded in multiple
+      base-encodings including hex, base64, base32, or others. When
+      representing a multihash using a base-encoding, the Multibase format
+      SHOULD be used.
+    </t>
+
+    <section title="Example Multihashes">
+
+      <t>
+        Given the sample text "multihash", the following example
+        multihash values may be generated:
+      </t>
+
+      <texttable>
+        <ttcol>Function</ttcol>
+        <ttcol>ID</ttcol>
+        <ttcol>Multihash (Multibase/Base16)</ttcol>
+
+        <c>sha1</c>
+        <c>0x11</c>
+        <c>f111488c2f11fb2ce392acb5b2986e640211c4690073e</c>
+
+        <c>sha2-256</c>
+        <c>0x12</c>
+        <c>f12209cbc07c3f991725836a3aa2a581ca2029198aa420b9d99bc0e131d9f3e2cbe47</c>
+      </texttable>
+    </section>
+
+    <section title="Multihash ABNF">
+<figure><preamble>Multihash</preamble>
+<artwork><![CDATA[
+hash-function-code = unsigned-varint
+hash-digest-size = unsigned-varint
+hash = {hash function output}
+
+multihash = hash-function-code hash-digest-size hash
 ]]></artwork></figure>
     </section>
 
@@ -477,6 +334,13 @@ multibase = base-identifier {base-encoded-data}
         </t>
 
         <t>
+          Multiformat data formats themselves MAY be registered within The
+          Codec Registry using a Type field value of "multiformat". For all
+          other registrations, the Type field MUST refer to an entry in The
+          Codec Registry whose Type is "multiformat".
+        </t>
+
+        <t>
           The expert(s) can define additional fields to be collected in
           the registry.
         </t>
@@ -504,2541 +368,1735 @@ multibase = base-identifier {base-encoded-data}
 
         <texttable>
           <ttcol>Name</ttcol>
-          <ttcol>Tag</ttcol>
+          <ttcol>Type</ttcol>
           <ttcol>Code</ttcol>
           <ttcol>Description</ttcol>
-          <ttcol>Reference</ttcol>
 
           <c>identity</c>
           <c>multihash</c>
           <c>0x00</c>
           <c>raw binary</c>
-          <c>This document</c>
-
-          <c>ip4</c>
-          <c>multiaddr</c>
-          <c>0x04</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>tcp</c>
-          <c>multiaddr</c>
-          <c>0x06</c>
-          <c></c>
-          <c>This document</c>
 
           <c>sha1</c>
           <c>multihash</c>
           <c>0x11</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha2-256</c>
           <c>multihash</c>
           <c>0x12</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha2-512</c>
           <c>multihash</c>
           <c>0x13</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha3-512</c>
           <c>multihash</c>
           <c>0x14</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha3-384</c>
           <c>multihash</c>
           <c>0x15</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha3-256</c>
           <c>multihash</c>
           <c>0x16</c>
           <c></c>
-          <c>This document</c>
 
           <c>sha3-224</c>
           <c>multihash</c>
           <c>0x17</c>
           <c></c>
-          <c>This document</c>
 
           <c>shake-128</c>
           <c>multihash</c>
           <c>0x18</c>
           <c></c>
-          <c>This document</c>
 
           <c>shake-256</c>
           <c>multihash</c>
           <c>0x19</c>
           <c></c>
-          <c>This document</c>
 
           <c>keccak-224</c>
           <c>multihash</c>
           <c>0x1a</c>
           <c>keccak has variable output length. The number specifies the core length</c>
-          <c>This document</c>
 
           <c>keccak-256</c>
           <c>multihash</c>
           <c>0x1b</c>
           <c></c>
-          <c>This document</c>
 
           <c>keccak-384</c>
           <c>multihash</c>
           <c>0x1c</c>
           <c></c>
-          <c>This document</c>
 
           <c>keccak-512</c>
           <c>multihash</c>
           <c>0x1d</c>
           <c></c>
-          <c>This document</c>
-
-          <c>dccp</c>
-          <c>multiaddr</c>
-          <c>0x21</c>
-          <c></c>
-          <c>This document</c>
 
           <c>murmur3-128</c>
           <c>multihash</c>
           <c>0x22</c>
           <c></c>
-          <c>This document</c>
 
           <c>murmur3-32</c>
           <c>multihash</c>
           <c>0x23</c>
           <c></c>
-          <c>This document</c>
-
-          <c>ip6</c>
-          <c>multiaddr</c>
-          <c>0x29</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>ip6zone</c>
-          <c>multiaddr</c>
-          <c>0x2a</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>path</c>
-          <c>namespace</c>
-          <c>0x2f</c>
-          <c>Namespace for string paths. Corresponds to / in ASCII.</c>
-          <c>This document</c>
 
           <c>multicodec</c>
           <c>multiformat</c>
           <c>0x30</c>
           <c></c>
-          <c>This document</c>
 
           <c>multihash</c>
           <c>multiformat</c>
           <c>0x31</c>
           <c></c>
-          <c>This document</c>
-
-          <c>multiaddr</c>
-          <c>multiformat</c>
-          <c>0x32</c>
-          <c></c>
-          <c>This document</c>
 
           <c>multibase</c>
           <c>multiformat</c>
           <c>0x33</c>
           <c></c>
-          <c>This document</c>
-
-          <c>dns</c>
-          <c>multiaddr</c>
-          <c>0x35</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>dns4</c>
-          <c>multiaddr</c>
-          <c>0x36</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>dns6</c>
-          <c>multiaddr</c>
-          <c>0x37</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>dnsaddr</c>
-          <c>multiaddr</c>
-          <c>0x38</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>protobuf</c>
-          <c>serialization</c>
-          <c>0x50</c>
-          <c>Protocol Buffers</c>
-          <c>This document</c>
-
-          <c>cbor</c>
-          <c>serialization</c>
-          <c>0x51</c>
-          <c>CBOR</c>
-          <c>This document</c>
-
-          <c>raw</c>
-          <c>ipld</c>
-          <c>0x55</c>
-          <c>raw binary</c>
-          <c>This document</c>
 
           <c>dbl-sha2-256</c>
           <c>multihash</c>
           <c>0x56</c>
           <c></c>
-          <c>This document</c>
-
-          <c>rlp</c>
-          <c>serialization</c>
-          <c>0x60</c>
-          <c>recursive length prefix</c>
-          <c>This document</c>
-
-          <c>bencode</c>
-          <c>serialization</c>
-          <c>0x63</c>
-          <c>bencode</c>
-          <c>This document</c>
-
-          <c>dag-pb</c>
-          <c>ipld</c>
-          <c>0x70</c>
-          <c>MerkleDAG protobuf</c>
-          <c>This document</c>
-
-          <c>dag-cbor</c>
-          <c>ipld</c>
-          <c>0x71</c>
-          <c>MerkleDAG cbor</c>
-          <c>This document</c>
-
-          <c>libp2p-key</c>
-          <c>ipld</c>
-          <c>0x72</c>
-          <c>Libp2p Public Key</c>
-          <c>This document</c>
-
-          <c>git-raw</c>
-          <c>ipld</c>
-          <c>0x78</c>
-          <c>Raw Git object</c>
-          <c>This document</c>
-
-          <c>torrent-info</c>
-          <c>ipld</c>
-          <c>0x7b</c>
-          <c>Torrent file info field (bencoded)</c>
-          <c>This document</c>
-
-          <c>torrent-file</c>
-          <c>ipld</c>
-          <c>0x7c</c>
-          <c>Torrent file (bencoded)</c>
-          <c>This document</c>
-
-          <c>leofcoin-block</c>
-          <c>ipld</c>
-          <c>0x81</c>
-          <c>Leofcoin Block</c>
-          <c>This document</c>
-
-          <c>leofcoin-tx</c>
-          <c>ipld</c>
-          <c>0x82</c>
-          <c>Leofcoin Transaction</c>
-          <c>This document</c>
-
-          <c>leofcoin-pr</c>
-          <c>ipld</c>
-          <c>0x83</c>
-          <c>Leofcoin Peer Reputation</c>
-          <c>This document</c>
-
-          <c>sctp</c>
-          <c>multiaddr</c>
-          <c>0x84</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>eth-block</c>
-          <c>ipld</c>
-          <c>0x90</c>
-          <c>Ethereum Block (RLP)</c>
-          <c>This document</c>
-
-          <c>eth-block-list</c>
-          <c>ipld</c>
-          <c>0x91</c>
-          <c>Ethereum Block List (RLP)</c>
-          <c>This document</c>
-
-          <c>eth-tx-trie</c>
-          <c>ipld</c>
-          <c>0x92</c>
-          <c>Ethereum Transaction Trie (Eth-Trie)</c>
-          <c>This document</c>
-
-          <c>eth-tx</c>
-          <c>ipld</c>
-          <c>0x93</c>
-          <c>Ethereum Transaction (RLP)</c>
-          <c>This document</c>
-
-          <c>eth-tx-receipt-trie</c>
-          <c>ipld</c>
-          <c>0x94</c>
-          <c>Ethereum Transaction Receipt Trie (Eth-Trie)</c>
-          <c>This document</c>
-
-          <c>eth-tx-receipt</c>
-          <c>ipld</c>
-          <c>0x95</c>
-          <c>Ethereum Transaction Receipt (RLP)</c>
-          <c>This document</c>
-
-          <c>eth-state-trie</c>
-          <c>ipld</c>
-          <c>0x96</c>
-          <c>Ethereum State Trie (Eth-Secure-Trie)</c>
-          <c>This document</c>
-
-          <c>eth-account-snapshot</c>
-          <c>ipld</c>
-          <c>0x97</c>
-          <c>Ethereum Account Snapshot (RLP)</c>
-          <c>This document</c>
-
-          <c>eth-storage-trie</c>
-          <c>ipld</c>
-          <c>0x98</c>
-          <c>Ethereum Contract Storage Trie (Eth-Secure-Trie)</c>
-          <c>This document</c>
-
-          <c>bitcoin-block</c>
-          <c>ipld</c>
-          <c>0xb0</c>
-          <c>Bitcoin Block</c>
-          <c>This document</c>
-
-          <c>bitcoin-tx</c>
-          <c>ipld</c>
-          <c>0xb1</c>
-          <c>Bitcoin Tx</c>
-          <c>This document</c>
-
-          <c>zcash-block</c>
-          <c>ipld</c>
-          <c>0xc0</c>
-          <c>Zcash Block</c>
-          <c>This document</c>
-
-          <c>zcash-tx</c>
-          <c>ipld</c>
-          <c>0xc1</c>
-          <c>Zcash Tx</c>
-          <c>This document</c>
-
-          <c>stellar-block</c>
-          <c>ipld</c>
-          <c>0xd0</c>
-          <c>Stellar Block</c>
-          <c>This document</c>
-
-          <c>stellar-tx</c>
-          <c>ipld</c>
-          <c>0xd1</c>
-          <c>Stellar Tx</c>
-          <c>This document</c>
 
           <c>md4</c>
           <c>multihash</c>
           <c>0xd4</c>
           <c></c>
-          <c>This document</c>
 
           <c>md5</c>
           <c>multihash</c>
           <c>0xd5</c>
           <c></c>
-          <c>This document</c>
 
           <c>bmt</c>
           <c>multihash</c>
           <c>0xd6</c>
           <c>Binary Merkle Tree Hash</c>
-          <c>This document</c>
-
-          <c>decred-block</c>
-          <c>ipld</c>
-          <c>0xe0</c>
-          <c>Decred Block</c>
-          <c>This document</c>
-
-          <c>decred-tx</c>
-          <c>ipld</c>
-          <c>0xe1</c>
-          <c>Decred Tx</c>
-          <c>This document</c>
-
-          <c>ipld-ns</c>
-          <c>namespace</c>
-          <c>0xe2</c>
-          <c>IPLD path</c>
-          <c>This document</c>
-
-          <c>ipfs-ns</c>
-          <c>namespace</c>
-          <c>0xe3</c>
-          <c>IPFS path</c>
-          <c>This document</c>
-
-          <c>swarm-ns</c>
-          <c>namespace</c>
-          <c>0xe4</c>
-          <c>Swarm path</c>
-          <c>This document</c>
-
-          <c>ipns-ns</c>
-          <c>namespace</c>
-          <c>0xe5</c>
-          <c>IPNS path</c>
-          <c>This document</c>
-
-          <c>ed25519-pub</c>
-          <c>key</c>
-          <c>0xed</c>
-          <c>Ed25519 public key</c>
-          <c>This document</c>
-
-          <c>dash-block</c>
-          <c>ipld</c>
-          <c>0xf0</c>
-          <c>Dash Block</c>
-          <c>This document</c>
-
-          <c>dash-tx</c>
-          <c>ipld</c>
-          <c>0xf1</c>
-          <c>Dash Tx</c>
-          <c>This document</c>
-
-          <c>swarm-manifest</c>
-          <c>ipld</c>
-          <c>0xfa</c>
-          <c>Swarm Manifest</c>
-          <c>This document</c>
-
-          <c>swarm-feed</c>
-          <c>ipld</c>
-          <c>0xfb</c>
-          <c>Swarm Feed</c>
-          <c>This document</c>
-
-          <c>udp</c>
-          <c>multiaddr</c>
-          <c>0x0111</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p-webrtc-star</c>
-          <c>multiaddr</c>
-          <c>0x0113</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p-webrtc-direct</c>
-          <c>multiaddr</c>
-          <c>0x0114</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p-stardust</c>
-          <c>multiaddr</c>
-          <c>0x0115</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p-circuit</c>
-          <c>multiaddr</c>
-          <c>0x0122</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>dag-json</c>
-          <c>ipld</c>
-          <c>0x0129</c>
-          <c>MerkleDAG json</c>
-          <c>This document</c>
-
-          <c>udt</c>
-          <c>multiaddr</c>
-          <c>0x012d</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>utp</c>
-          <c>multiaddr</c>
-          <c>0x012e</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>unix</c>
-          <c>multiaddr</c>
-          <c>0x0190</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p</c>
-          <c>multiaddr</c>
-          <c>0x01a5</c>
-          <c>libp2p</c>
-          <c>This document</c>
-
-          <c>ipfs</c>
-          <c>multiaddr</c>
-          <c>0x01a5</c>
-          <c>libp2p (deprecated)</c>
-          <c>This document</c>
-
-          <c>https</c>
-          <c>multiaddr</c>
-          <c>0x01bb</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>onion</c>
-          <c>multiaddr</c>
-          <c>0x01bc</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>onion3</c>
-          <c>multiaddr</c>
-          <c>0x01bd</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>garlic64</c>
-          <c>multiaddr</c>
-          <c>0x01be</c>
-          <c>I2P base64 (raw public key)</c>
-          <c>This document</c>
-
-          <c>garlic32</c>
-          <c>multiaddr</c>
-          <c>0x01bf</c>
-          <c>I2P base32 (hashed public key or encoded public key/checksum+optional secret)</c>
-          <c>This document</c>
-
-          <c>quic</c>
-          <c>multiaddr</c>
-          <c>0x01cc</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>ws</c>
-          <c>multiaddr</c>
-          <c>0x01dd</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>wss</c>
-          <c>multiaddr</c>
-          <c>0x01de</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>p2p-websocket-star</c>
-          <c>multiaddr</c>
-          <c>0x01df</c>
-          <c></c>
-          <c>This document</c>
-
-          <c>http</c>
-          <c>multiaddr</c>
-          <c>0x01e0</c>
-          <c></c>
-          <c>This document</c>
 
           <c>x11</c>
           <c>multihash</c>
           <c>0x1100</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-8</c>
           <c>multihash</c>
           <c>0xb201</c>
           <c>Blake2b consists of 64 output lengths that give different hashes</c>
-          <c>This document</c>
 
           <c>blake2b-16</c>
           <c>multihash</c>
           <c>0xb202</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-24</c>
           <c>multihash</c>
           <c>0xb203</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-32</c>
           <c>multihash</c>
           <c>0xb204</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-40</c>
           <c>multihash</c>
           <c>0xb205</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-48</c>
           <c>multihash</c>
           <c>0xb206</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-56</c>
           <c>multihash</c>
           <c>0xb207</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-64</c>
           <c>multihash</c>
           <c>0xb208</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-72</c>
           <c>multihash</c>
           <c>0xb209</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-80</c>
           <c>multihash</c>
           <c>0xb20a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-88</c>
           <c>multihash</c>
           <c>0xb20b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-96</c>
           <c>multihash</c>
           <c>0xb20c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-104</c>
           <c>multihash</c>
           <c>0xb20d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-112</c>
           <c>multihash</c>
           <c>0xb20e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-120</c>
           <c>multihash</c>
           <c>0xb20f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-128</c>
           <c>multihash</c>
           <c>0xb210</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-136</c>
           <c>multihash</c>
           <c>0xb211</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-144</c>
           <c>multihash</c>
           <c>0xb212</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-152</c>
           <c>multihash</c>
           <c>0xb213</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-160</c>
           <c>multihash</c>
           <c>0xb214</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-168</c>
           <c>multihash</c>
           <c>0xb215</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-176</c>
           <c>multihash</c>
           <c>0xb216</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-184</c>
           <c>multihash</c>
           <c>0xb217</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-192</c>
           <c>multihash</c>
           <c>0xb218</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-200</c>
           <c>multihash</c>
           <c>0xb219</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-208</c>
           <c>multihash</c>
           <c>0xb21a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-216</c>
           <c>multihash</c>
           <c>0xb21b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-224</c>
           <c>multihash</c>
           <c>0xb21c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-232</c>
           <c>multihash</c>
           <c>0xb21d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-240</c>
           <c>multihash</c>
           <c>0xb21e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-248</c>
           <c>multihash</c>
           <c>0xb21f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-256</c>
           <c>multihash</c>
           <c>0xb220</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-264</c>
           <c>multihash</c>
           <c>0xb221</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-272</c>
           <c>multihash</c>
           <c>0xb222</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-280</c>
           <c>multihash</c>
           <c>0xb223</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-288</c>
           <c>multihash</c>
           <c>0xb224</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-296</c>
           <c>multihash</c>
           <c>0xb225</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-304</c>
           <c>multihash</c>
           <c>0xb226</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-312</c>
           <c>multihash</c>
           <c>0xb227</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-320</c>
           <c>multihash</c>
           <c>0xb228</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-328</c>
           <c>multihash</c>
           <c>0xb229</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-336</c>
           <c>multihash</c>
           <c>0xb22a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-344</c>
           <c>multihash</c>
           <c>0xb22b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-352</c>
           <c>multihash</c>
           <c>0xb22c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-360</c>
           <c>multihash</c>
           <c>0xb22d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-368</c>
           <c>multihash</c>
           <c>0xb22e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-376</c>
           <c>multihash</c>
           <c>0xb22f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-384</c>
           <c>multihash</c>
           <c>0xb230</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-392</c>
           <c>multihash</c>
           <c>0xb231</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-400</c>
           <c>multihash</c>
           <c>0xb232</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-408</c>
           <c>multihash</c>
           <c>0xb233</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-416</c>
           <c>multihash</c>
           <c>0xb234</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-424</c>
           <c>multihash</c>
           <c>0xb235</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-432</c>
           <c>multihash</c>
           <c>0xb236</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-440</c>
           <c>multihash</c>
           <c>0xb237</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-448</c>
           <c>multihash</c>
           <c>0xb238</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-456</c>
           <c>multihash</c>
           <c>0xb239</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-464</c>
           <c>multihash</c>
           <c>0xb23a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-472</c>
           <c>multihash</c>
           <c>0xb23b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-480</c>
           <c>multihash</c>
           <c>0xb23c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-488</c>
           <c>multihash</c>
           <c>0xb23d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-496</c>
           <c>multihash</c>
           <c>0xb23e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-504</c>
           <c>multihash</c>
           <c>0xb23f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2b-512</c>
           <c>multihash</c>
           <c>0xb240</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-8</c>
           <c>multihash</c>
           <c>0xb241</c>
           <c>Blake2s consists of 32 output lengths that give different hashes</c>
-          <c>This document</c>
 
           <c>blake2s-16</c>
           <c>multihash</c>
           <c>0xb242</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-24</c>
           <c>multihash</c>
           <c>0xb243</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-32</c>
           <c>multihash</c>
           <c>0xb244</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-40</c>
           <c>multihash</c>
           <c>0xb245</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-48</c>
           <c>multihash</c>
           <c>0xb246</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-56</c>
           <c>multihash</c>
           <c>0xb247</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-64</c>
           <c>multihash</c>
           <c>0xb248</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-72</c>
           <c>multihash</c>
           <c>0xb249</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-80</c>
           <c>multihash</c>
           <c>0xb24a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-88</c>
           <c>multihash</c>
           <c>0xb24b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-96</c>
           <c>multihash</c>
           <c>0xb24c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-104</c>
           <c>multihash</c>
           <c>0xb24d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-112</c>
           <c>multihash</c>
           <c>0xb24e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-120</c>
           <c>multihash</c>
           <c>0xb24f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-128</c>
           <c>multihash</c>
           <c>0xb250</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-136</c>
           <c>multihash</c>
           <c>0xb251</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-144</c>
           <c>multihash</c>
           <c>0xb252</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-152</c>
           <c>multihash</c>
           <c>0xb253</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-160</c>
           <c>multihash</c>
           <c>0xb254</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-168</c>
           <c>multihash</c>
           <c>0xb255</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-176</c>
           <c>multihash</c>
           <c>0xb256</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-184</c>
           <c>multihash</c>
           <c>0xb257</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-192</c>
           <c>multihash</c>
           <c>0xb258</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-200</c>
           <c>multihash</c>
           <c>0xb259</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-208</c>
           <c>multihash</c>
           <c>0xb25a</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-216</c>
           <c>multihash</c>
           <c>0xb25b</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-224</c>
           <c>multihash</c>
           <c>0xb25c</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-232</c>
           <c>multihash</c>
           <c>0xb25d</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-240</c>
           <c>multihash</c>
           <c>0xb25e</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-248</c>
           <c>multihash</c>
           <c>0xb25f</c>
           <c></c>
-          <c>This document</c>
 
           <c>blake2s-256</c>
           <c>multihash</c>
           <c>0xb260</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-8</c>
           <c>multihash</c>
           <c>0xb301</c>
           <c>Skein256 consists of 32 output lengths that give different hashes</c>
-          <c>This document</c>
 
           <c>skein256-16</c>
           <c>multihash</c>
           <c>0xb302</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-24</c>
           <c>multihash</c>
           <c>0xb303</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-32</c>
           <c>multihash</c>
           <c>0xb304</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-40</c>
           <c>multihash</c>
           <c>0xb305</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-48</c>
           <c>multihash</c>
           <c>0xb306</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-56</c>
           <c>multihash</c>
           <c>0xb307</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-64</c>
           <c>multihash</c>
           <c>0xb308</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-72</c>
           <c>multihash</c>
           <c>0xb309</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-80</c>
           <c>multihash</c>
           <c>0xb30a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-88</c>
           <c>multihash</c>
           <c>0xb30b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-96</c>
           <c>multihash</c>
           <c>0xb30c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-104</c>
           <c>multihash</c>
           <c>0xb30d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-112</c>
           <c>multihash</c>
           <c>0xb30e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-120</c>
           <c>multihash</c>
           <c>0xb30f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-128</c>
           <c>multihash</c>
           <c>0xb310</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-136</c>
           <c>multihash</c>
           <c>0xb311</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-144</c>
           <c>multihash</c>
           <c>0xb312</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-152</c>
           <c>multihash</c>
           <c>0xb313</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-160</c>
           <c>multihash</c>
           <c>0xb314</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-168</c>
           <c>multihash</c>
           <c>0xb315</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-176</c>
           <c>multihash</c>
           <c>0xb316</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-184</c>
           <c>multihash</c>
           <c>0xb317</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-192</c>
           <c>multihash</c>
           <c>0xb318</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-200</c>
           <c>multihash</c>
           <c>0xb319</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-208</c>
           <c>multihash</c>
           <c>0xb31a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-216</c>
           <c>multihash</c>
           <c>0xb31b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-224</c>
           <c>multihash</c>
           <c>0xb31c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-232</c>
           <c>multihash</c>
           <c>0xb31d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-240</c>
           <c>multihash</c>
           <c>0xb31e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-248</c>
           <c>multihash</c>
           <c>0xb31f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein256-256</c>
           <c>multihash</c>
           <c>0xb320</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-8</c>
           <c>multihash</c>
           <c>0xb321</c>
           <c>Skein512 consists of 64 output lengths that give different hashes</c>
-          <c>This document</c>
 
           <c>skein512-16</c>
           <c>multihash</c>
           <c>0xb322</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-24</c>
           <c>multihash</c>
           <c>0xb323</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-32</c>
           <c>multihash</c>
           <c>0xb324</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-40</c>
           <c>multihash</c>
           <c>0xb325</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-48</c>
           <c>multihash</c>
           <c>0xb326</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-56</c>
           <c>multihash</c>
           <c>0xb327</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-64</c>
           <c>multihash</c>
           <c>0xb328</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-72</c>
           <c>multihash</c>
           <c>0xb329</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-80</c>
           <c>multihash</c>
           <c>0xb32a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-88</c>
           <c>multihash</c>
           <c>0xb32b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-96</c>
           <c>multihash</c>
           <c>0xb32c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-104</c>
           <c>multihash</c>
           <c>0xb32d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-112</c>
           <c>multihash</c>
           <c>0xb32e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-120</c>
           <c>multihash</c>
           <c>0xb32f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-128</c>
           <c>multihash</c>
           <c>0xb330</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-136</c>
           <c>multihash</c>
           <c>0xb331</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-144</c>
           <c>multihash</c>
           <c>0xb332</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-152</c>
           <c>multihash</c>
           <c>0xb333</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-160</c>
           <c>multihash</c>
           <c>0xb334</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-168</c>
           <c>multihash</c>
           <c>0xb335</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-176</c>
           <c>multihash</c>
           <c>0xb336</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-184</c>
           <c>multihash</c>
           <c>0xb337</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-192</c>
           <c>multihash</c>
           <c>0xb338</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-200</c>
           <c>multihash</c>
           <c>0xb339</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-208</c>
           <c>multihash</c>
           <c>0xb33a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-216</c>
           <c>multihash</c>
           <c>0xb33b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-224</c>
           <c>multihash</c>
           <c>0xb33c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-232</c>
           <c>multihash</c>
           <c>0xb33d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-240</c>
           <c>multihash</c>
           <c>0xb33e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-248</c>
           <c>multihash</c>
           <c>0xb33f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-256</c>
           <c>multihash</c>
           <c>0xb340</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-264</c>
           <c>multihash</c>
           <c>0xb341</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-272</c>
           <c>multihash</c>
           <c>0xb342</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-280</c>
           <c>multihash</c>
           <c>0xb343</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-288</c>
           <c>multihash</c>
           <c>0xb344</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-296</c>
           <c>multihash</c>
           <c>0xb345</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-304</c>
           <c>multihash</c>
           <c>0xb346</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-312</c>
           <c>multihash</c>
           <c>0xb347</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-320</c>
           <c>multihash</c>
           <c>0xb348</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-328</c>
           <c>multihash</c>
           <c>0xb349</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-336</c>
           <c>multihash</c>
           <c>0xb34a</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-344</c>
           <c>multihash</c>
           <c>0xb34b</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-352</c>
           <c>multihash</c>
           <c>0xb34c</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-360</c>
           <c>multihash</c>
           <c>0xb34d</c>
-          <c></c>      <c>This document</c>
+          <c></c>
 
           <c>skein512-368</c>
           <c>multihash</c>
           <c>0xb34e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-376</c>
           <c>multihash</c>
           <c>0xb34f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-384</c>
           <c>multihash</c>
           <c>0xb350</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-392</c>
           <c>multihash</c>
           <c>0xb351</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-400</c>
           <c>multihash</c>
           <c>0xb352</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-408</c>
           <c>multihash</c>
           <c>0xb353</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-416</c>
           <c>multihash</c>
           <c>0xb354</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-424</c>
           <c>multihash</c>
           <c>0xb355</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-432</c>
           <c>multihash</c>
           <c>0xb356</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-440</c>
           <c>multihash</c>
           <c>0xb357</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-448</c>
           <c>multihash</c>
           <c>0xb358</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-456</c>
           <c>multihash</c>
           <c>0xb359</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-464</c>
           <c>multihash</c>
           <c>0xb35a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-472</c>
           <c>multihash</c>
           <c>0xb35b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-480</c>
           <c>multihash</c>
           <c>0xb35c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-488</c>
           <c>multihash</c>
           <c>0xb35d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-496</c>
           <c>multihash</c>
           <c>0xb35e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-504</c>
           <c>multihash</c>
           <c>0xb35f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein512-512</c>
           <c>multihash</c>
           <c>0xb360</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-8</c>
           <c>multihash</c>
           <c>0xb361</c>
           <c>Skein1024 consists of 128 output lengths that give different hashes</c>
-          <c>This document</c>
 
           <c>skein1024-16</c>
           <c>multihash</c>
           <c>0xb362</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-24</c>
           <c>multihash</c>
           <c>0xb363</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-32</c>
           <c>multihash</c>
           <c>0xb364</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-40</c>
           <c>multihash</c>
           <c>0xb365</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-48</c>
           <c>multihash</c>
           <c>0xb366</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-56</c>
           <c>multihash</c>
           <c>0xb367</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-64</c>
           <c>multihash</c>
           <c>0xb368</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-72</c>
           <c>multihash</c>
           <c>0xb369</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-80</c>
           <c>multihash</c>
           <c>0xb36a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-88</c>
           <c>multihash</c>
           <c>0xb36b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-96</c>
           <c>multihash</c>
           <c>0xb36c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-104</c>
           <c>multihash</c>
           <c>0xb36d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-112</c>
           <c>multihash</c>
           <c>0xb36e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-120</c>
           <c>multihash</c>
           <c>0xb36f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-128</c>
           <c>multihash</c>
           <c>0xb370</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-136</c>
           <c>multihash</c>
           <c>0xb371</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-144</c>
           <c>multihash</c>
           <c>0xb372</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-152</c>
           <c>multihash</c>
           <c>0xb373</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-160</c>
           <c>multihash</c>
           <c>0xb374</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-168</c>
           <c>multihash</c>
           <c>0xb375</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-176</c>
           <c>multihash</c>
           <c>0xb376</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-184</c>
           <c>multihash</c>
           <c>0xb377</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-192</c>
           <c>multihash</c>
           <c>0xb378</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-200</c>
           <c>multihash</c>
           <c>0xb379</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-208</c>
           <c>multihash</c>
           <c>0xb37a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-216</c>
           <c>multihash</c>
           <c>0xb37b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-224</c>
           <c>multihash</c>
           <c>0xb37c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-232</c>
           <c>multihash</c>
           <c>0xb37d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-240</c>
           <c>multihash</c>
           <c>0xb37e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-248</c>
           <c>multihash</c>
           <c>0xb37f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-256</c>
           <c>multihash</c>
           <c>0xb380</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-264</c>
           <c>multihash</c>
           <c>0xb381</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-272</c>
           <c>multihash</c>
           <c>0xb382</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-280</c>
           <c>multihash</c>
           <c>0xb383</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-288</c>
           <c>multihash</c>
           <c>0xb384</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-296</c>
           <c>multihash</c>
           <c>0xb385</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-304</c>
           <c>multihash</c>
           <c>0xb386</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-312</c>
           <c>multihash</c>
           <c>0xb387</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-320</c>
           <c>multihash</c>
           <c>0xb388</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-328</c>
           <c>multihash</c>
           <c>0xb389</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-336</c>
           <c>multihash</c>
           <c>0xb38a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-344</c>
           <c>multihash</c>
           <c>0xb38b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-352</c>
           <c>multihash</c>
           <c>0xb38c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-360</c>
           <c>multihash</c>
           <c>0xb38d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-368</c>
           <c>multihash</c>
           <c>0xb38e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-376</c>
           <c>multihash</c>
           <c>0xb38f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-384</c>
           <c>multihash</c>
           <c>0xb390</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-392</c>
           <c>multihash</c>
           <c>0xb391</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-400</c>
           <c>multihash</c>
           <c>0xb392</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-408</c>
           <c>multihash</c>
           <c>0xb393</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-416</c>
           <c>multihash</c>
           <c>0xb394</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-424</c>
           <c>multihash</c>
           <c>0xb395</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-432</c>
           <c>multihash</c>
           <c>0xb396</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-440</c>
           <c>multihash</c>
           <c>0xb397</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-448</c>
           <c>multihash</c>
           <c>0xb398</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-456</c>
           <c>multihash</c>
           <c>0xb399</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-464</c>
           <c>multihash</c>
           <c>0xb39a</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-472</c>
           <c>multihash</c>
           <c>0xb39b</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-480</c>
           <c>multihash</c>
           <c>0xb39c</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-488</c>
           <c>multihash</c>
           <c>0xb39d</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-496</c>
           <c>multihash</c>
           <c>0xb39e</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-504</c>
           <c>multihash</c>
           <c>0xb39f</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-512</c>
           <c>multihash</c>
           <c>0xb3a0</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-520</c>
           <c>multihash</c>
           <c>0xb3a1</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-528</c>
           <c>multihash</c>
           <c>0xb3a2</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-536</c>
           <c>multihash</c>
           <c>0xb3a3</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-544</c>
           <c>multihash</c>
           <c>0xb3a4</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-552</c>
           <c>multihash</c>
           <c>0xb3a5</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-560</c>
           <c>multihash</c>
           <c>0xb3a6</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-568</c>
           <c>multihash</c>
           <c>0xb3a7</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-576</c>
           <c>multihash</c>
           <c>0xb3a8</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-584</c>
           <c>multihash</c>
           <c>0xb3a9</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-592</c>
           <c>multihash</c>
           <c>0xb3aa</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-600</c>
           <c>multihash</c>
           <c>0xb3ab</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-608</c>
           <c>multihash</c>
           <c>0xb3ac</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-616</c>
           <c>multihash</c>
           <c>0xb3ad</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-624</c>
           <c>multihash</c>
           <c>0xb3ae</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-632</c>
           <c>multihash</c>
           <c>0xb3af</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-640</c>
           <c>multihash</c>
           <c>0xb3b0</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-648</c>
           <c>multihash</c>
           <c>0xb3b1</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-656</c>
           <c>multihash</c>
           <c>0xb3b2</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-664</c>
           <c>multihash</c>
           <c>0xb3b3</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-672</c>
           <c>multihash</c>
           <c>0xb3b4</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-680</c>
           <c>multihash</c>
           <c>0xb3b5</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-688</c>
           <c>multihash</c>
           <c>0xb3b6</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-696</c>
           <c>multihash</c>
           <c>0xb3b7</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-704</c>
           <c>multihash</c>
           <c>0xb3b8</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-712</c>
           <c>multihash</c>
           <c>0xb3b9</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-720</c>
           <c>multihash</c>
           <c>0xb3ba</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-728</c>
           <c>multihash</c>
           <c>0xb3bb</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-736</c>
           <c>multihash</c>
           <c>0xb3bc</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-744</c>
           <c>multihash</c>
           <c>0xb3bd</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-752</c>
           <c>multihash</c>
           <c>0xb3be</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-760</c>
           <c>multihash</c>
           <c>0xb3bf</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-768</c>
           <c>multihash</c>
           <c>0xb3c0</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-776</c>
           <c>multihash</c>
           <c>0xb3c1</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-784</c>
           <c>multihash</c>
           <c>0xb3c2</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-792</c>
           <c>multihash</c>
           <c>0xb3c3</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-800</c>
           <c>multihash</c>
           <c>0xb3c4</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-808</c>
           <c>multihash</c>
           <c>0xb3c5</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-816</c>
           <c>multihash</c>
           <c>0xb3c6</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-824</c>
           <c>multihash</c>
           <c>0xb3c7</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-832</c>
           <c>multihash</c>
           <c>0xb3c8</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-840</c>
           <c>multihash</c>
           <c>0xb3c9</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-848</c>
           <c>multihash</c>
           <c>0xb3ca</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-856</c>
           <c>multihash</c>
           <c>0xb3cb</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-864</c>
           <c>multihash</c>
           <c>0xb3cc</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-872</c>
           <c>multihash</c>
           <c>0xb3cd</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-880</c>
           <c>multihash</c>
           <c>0xb3ce</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-888</c>
           <c>multihash</c>
           <c>0xb3cf</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-896</c>
           <c>multihash</c>
           <c>0xb3d0</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-904</c>
           <c>multihash</c>
           <c>0xb3d1</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-912</c>
           <c>multihash</c>
           <c>0xb3d2</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-920</c>
           <c>multihash</c>
           <c>0xb3d3</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-928</c>
           <c>multihash</c>
           <c>0xb3d4</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-936</c>
           <c>multihash</c>
           <c>0xb3d5</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-944</c>
           <c>multihash</c>
           <c>0xb3d6</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-952</c>
           <c>multihash</c>
           <c>0xb3d7</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-960</c>
           <c>multihash</c>
           <c>0xb3d8</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-968</c>
           <c>multihash</c>
           <c>0xb3d9</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-976</c>
           <c>multihash</c>
           <c>0xb3da</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-984</c>
           <c>multihash</c>
           <c>0xb3db</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-992</c>
           <c>multihash</c>
           <c>0xb3dc</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-1000</c>
           <c>multihash</c>
           <c>0xb3dd</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-1008</c>
           <c>multihash</c>
           <c>0xb3de</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-1016</c>
           <c>multihash</c>
           <c>0xb3df</c>
           <c></c>
-          <c>This document</c>
 
           <c>skein1024-1024</c>
           <c>multihash</c>
           <c>0xb3e0</c>
           <c></c>
-          <c>This document</c>
 
-          <c>holochain-adr-v0</c>
-          <c>holochain</c>
-          <c>0x807124</c>
-          <c>Holochain v0 address    + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
-
-          <c>holochain-adr-v1</c>
-          <c>holochain</c>
-          <c>0x817124</c>
-          <c>Holochain v1 address    + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
-
-          <c>holochain-key-v0</c>
-          <c>holochain</c>
-          <c>0x947124</c>
-          <c>Holochain v0 public key + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
-
-          <c>holochain-key-v1</c>
-          <c>holochain</c>
-          <c>0x957124</c>
-          <c>Holochain v1 public key + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
-
-          <c>holochain-sig-v0</c>
-          <c>holochain</c>
-          <c>0xa27124</c>
-          <c>Holochain v0 signature  + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
-
-          <c>holochain-sig-v1</c>
-          <c>holochain</c>
-          <c>0xa37124</c>
-          <c>Holochain v1 signature  + 8 R-S (63 x Base-32)</c>
-          <c>This document</c>
         </texttable>
+
+        <t>
+          For each of the above entries, this document serves as the reference.
+        </t>
 
       </section>
 
@@ -3122,123 +2180,105 @@ multibase = base-identifier {base-encoded-data}
           <ttcol>Encoding</ttcol>
           <ttcol>Code</ttcol>
           <ttcol>Description</ttcol>
-          <ttcol>Reference</ttcol>
 
             <c>identity</c>
             <c>0x00</c>
             <c>8-bit binary (encoder and decoder keeps data unmodified)</c>
-            <c>This Document</c>
 
             <c>base2</c>
             <c>0</c>
             <c>binary (01010101)</c>
-            <c>This Document</c>
 
             <c>base8</c>
             <c>7</c>
             <c>octal</c>
-            <c>This Document</c>
 
             <c>base10</c>
             <c>9</c>
             <c>decimal</c>
-            <c>This Document</c>
 
             <c>base16</c>
             <c>f</c>
             <c>hexadecimal</c>
-            <c>This Document</c>
 
             <c>base16upper</c>
             <c>F</c>
             <c>hexadecimal</c>
-            <c>This Document</c>
 
             <c>base32hex</c>
             <c>v</c>
             <c>rfc4648 no padding - highest char</c>
-            <c>This Document</c>
 
             <c>base32hexupper</c>
             <c>V</c>
             <c>rfc4648 no padding - highest char</c>
-            <c>This Document</c>
 
             <c>base32hexpad</c>
             <c>t</c>
             <c>rfc4648 with padding</c>
-            <c>This Document</c>
 
             <c>base32hexpadupper</c>
             <c>T</c>
             <c>rfc4648 with padding</c>
-            <c>This Document</c>
 
             <c>base32</c>
             <c>b</c>
             <c>rfc4648 no padding</c>
-            <c>This Document</c>
 
             <c>base32upper</c>
             <c>B</c>
             <c>rfc4648 no padding</c>
-            <c>This Document</c>
 
             <c>base32pad</c>
             <c>c</c>
             <c>rfc4648 with padding</c>
-            <c>This Document</c>
 
             <c>base32padupper</c>
             <c>C</c>
             <c>rfc4648 with padding</c>
-            <c>This Document</c>
 
             <c>base32z</c>
             <c>h</c>
             <c>z-base-32 (used by Tahoe-LAFS)</c>
-            <c>This Document</c>
 
             <c>base58flickr</c>
             <c>Z</c>
             <c>base58 flicker</c>
-            <c>This Document</c>
 
             <c>base58btc</c>
             <c>z</c>
             <c>base58 bitcoin</c>
-            <c>This Document</c>
 
             <c>base64</c>
             <c>m</c>
             <c>rfc4648 no padding</c>
-            <c>This Document</c>
 
             <c>base64pad</c>
             <c>M</c>
             <c>rfc4648 with padding - MIME encoding</c>
-            <c>This Document</c>
 
             <c>base64url</c>
             <c>u</c>
             <c>rfc4648 no padding</c>
-            <c>This Document</c>
 
             <c>base64urlpad</c>
             <c>U</c>
             <c>rfc4648 with padding</c>
-            <c>This Document</c>
 
             <c>base58libp2p-identity</c>
             <c>1</c>
             <c>Base58 encoded identity multihashes used by libp2p</c>
-            <c>This Document</c>
 
             <c>base58libp2p-sha2</c>
             <c>Q</c>
             <c>Base58 encoded sha2-256 multihashes used by libp2p</c>
-            <c>This Document</c>
+
         </texttable>
+
+        <t>
+          For each of the above entries, this document serves as the reference.
+        </t>
+
       </section>
 
     </section>
@@ -3251,6 +2291,22 @@ multibase = base-identifier {base-encoded-data}
     &rfc2119;
     &rfc5234;
     &rfc8126;
+
+<reference anchor="DWARF3" target="http://dwarfstd.org/doc/Dwarf3.pdf">
+<front>
+<title>DWARF Debugging Information Format </title>
+<author >
+<organization>DWARF Debugging Information Format Workgroup</organization>
+</author>
+<date year="2005" month="December"/>
+<abstract>
+<t>
+This document defines the format for the information generated by compilers, assemblers and linkage editors, that is necessary for symbolic, source-level debugging. The debugging information format does not favor the design of any compiler or debugger. Instead, the goal is to create a method of communicating an accurate picture of the source program to any debugger in a form that is extensible to different languages while retaining backward compatibility
+</t>
+</abstract>
+</front>
+</reference>
+
   </references>
 </back>
 </rfc>
