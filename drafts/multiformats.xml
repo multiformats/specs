@@ -33,7 +33,7 @@
 
     <abstract>
       <t>
-        Defines Multiformats, a collection of dataformats that aim to
+        Defines Multiformats, a collection of data formats that aim to
         future-proof systems by adding self-description to format values;
         and defines the Multihash and Multibase Multiformat data
         formats.
@@ -47,7 +47,7 @@
   <section anchor="intro" title="Introduction">
 
     <t>
-      Multiformats are a collection of dataformats that aim to future-proof
+      Multiformats are a collection of data formats that aim to future-proof
       systems by adding self-description to format values; allowing
       interoperability and protocol agility while avoiding lock in.
     </t>
@@ -168,9 +168,9 @@ unsigned-varint = *8varint-continuation varint-terminator
     </t>
 
     <t>
-      A multibase consists simply of a single prefix character that
+      A Multibase consists simply of a single prefix character that
       identifies the base-encoding of the remaining characters. All
-      valid multibase prefix characters are registered in the
+      valid Multibase prefix characters are registered in The
       Multibase Registry.
     </t>
 
@@ -226,14 +226,14 @@ multibase = base-identifier {base-encoded-data}
       Multihash values encode the hash function output prefixed by an
       id identifying the hash function encoded as an unsigned variable
       length integer, and the length of the hash function output encoded
-      as an unsigned variable length integer. All valid multihash function
+      as an unsigned variable length integer. All valid Multihash function
       identifiers are registered in the Codec Registry.
     </t>
 
     <t>
       Multihash values are byte sequences that MAY be encoded in multiple
       base-encodings including hex, base64, base32, or others. When
-      representing a multihash using a base-encoding, the Multibase format
+      representing a Multihash using a base-encoding, the Multibase format
       SHOULD be used.
     </t>
 
@@ -241,7 +241,7 @@ multibase = base-identifier {base-encoded-data}
 
       <t>
         Given the sample text "multihash", the following example
-        multihash values may be generated:
+        Multihash values may be generated:
       </t>
 
       <texttable>
@@ -2267,11 +2267,11 @@ multihash = hash-function-code hash-digest-size hash
 
             <c>base58libp2p-identity</c>
             <c>1</c>
-            <c>Base58 encoded identity multihashes used by libp2p</c>
+            <c>Base58 encoded identity Multihashes used by libp2p</c>
 
             <c>base58libp2p-sha2</c>
             <c>Q</c>
-            <c>Base58 encoded sha2-256 multihashes used by libp2p</c>
+            <c>Base58 encoded sha2-256 Multihashes used by libp2p</c>
 
         </texttable>
 
