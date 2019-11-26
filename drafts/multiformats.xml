@@ -2146,8 +2146,23 @@ multihash = hash-function-code hash-digest-size hash
             <t>*Name*: The name of base-encoding</t>
             <t>*Prefix*: The requested prefix identifier</t>
             <t>*Description*: An optional short text description of the base encoding.</t>
+            <t>*Status*: An indicator of the current implementation status of the encoding and prefix. MUST be one of "draft", "candidate", or
+            "default".</t>
             <t>*Reference*: A reference to the document that specifies the base encoding, preferably including a URI that can be used to retrieve a copy of the document. An indication of the relevant section(s) can also be included but is not required.</t>
           </list>
+        </t>
+
+        <t>
+          Each of the Status field values indicates the following meanings:
+          <list style="symbols">
+            <t>*draft*: The encoding has been proposed but is not widely implemented and may be removed in the future.</t>
+            <t>*candidate*: The encoding is mature and widely implemented by many but not all implementations.</t>
+            <t>*default*: The encoding SHOULD be implemented by all implementations and are widely used.</t>
+          </list>
+        </t>
+
+        <t>
+          The expert(s) can change the Status of a registration at any time.
         </t>
 
         <t>
@@ -2180,99 +2195,112 @@ multihash = hash-function-code hash-digest-size hash
           <ttcol>Encoding</ttcol>
           <ttcol>Code</ttcol>
           <ttcol>Description</ttcol>
+          <ttcol>Status</ttcol>
 
             <c>identity</c>
             <c>0x00</c>
             <c>8-bit binary (encoder and decoder keeps data unmodified)</c>
+            <c>default</c>
 
             <c>base2</c>
             <c>0</c>
             <c>binary (01010101)</c>
+            <c>candidate</c>
 
             <c>base8</c>
             <c>7</c>
             <c>octal</c>
+            <c>draft</c>
 
             <c>base10</c>
             <c>9</c>
             <c>decimal</c>
+            <c>draft</c>
 
             <c>base16</c>
             <c>f</c>
             <c>hexadecimal</c>
+            <c>default</c>
 
             <c>base16upper</c>
             <c>F</c>
             <c>hexadecimal</c>
+            <c>default</c>
 
             <c>base32hex</c>
             <c>v</c>
             <c>rfc4648 no padding - highest char</c>
+            <c>candidate</c>
 
             <c>base32hexupper</c>
             <c>V</c>
             <c>rfc4648 no padding - highest char</c>
+            <c>candidate</c>
 
             <c>base32hexpad</c>
             <c>t</c>
             <c>rfc4648 with padding</c>
+            <c>candidate</c>
 
             <c>base32hexpadupper</c>
             <c>T</c>
             <c>rfc4648 with padding</c>
+            <c>candidate</c>
 
             <c>base32</c>
             <c>b</c>
             <c>rfc4648 no padding</c>
+            <c>default</c>
 
             <c>base32upper</c>
             <c>B</c>
             <c>rfc4648 no padding</c>
+            <c>default</c>
 
             <c>base32pad</c>
             <c>c</c>
             <c>rfc4648 with padding</c>
+            <c>candidate</c>
 
             <c>base32padupper</c>
             <c>C</c>
             <c>rfc4648 with padding</c>
+            <c>candidate</c>
 
             <c>base32z</c>
             <c>h</c>
             <c>z-base-32 (used by Tahoe-LAFS)</c>
+            <c>draft</c>
 
             <c>base58flickr</c>
             <c>Z</c>
             <c>base58 flicker</c>
+            <c>candidate</c>
 
             <c>base58btc</c>
             <c>z</c>
             <c>base58 bitcoin</c>
+            <c>default</c>
 
             <c>base64</c>
             <c>m</c>
             <c>rfc4648 no padding</c>
+            <c>default</c>
 
             <c>base64pad</c>
             <c>M</c>
             <c>rfc4648 with padding - MIME encoding</c>
+            <c>candidate</c>
 
             <c>base64url</c>
             <c>u</c>
             <c>rfc4648 no padding</c>
+            <c>default</c>
 
             <c>base64urlpad</c>
             <c>U</c>
             <c>rfc4648 with padding</c>
-
-            <c>base58libp2p-identity</c>
-            <c>1</c>
-            <c>Base58 encoded identity Multihashes used by libp2p</c>
-
-            <c>base58libp2p-sha2</c>
-            <c>Q</c>
-            <c>Base58 encoded sha2-256 Multihashes used by libp2p</c>
-
+            <c>default</c>
         </texttable>
 
         <t>

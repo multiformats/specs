@@ -3,9 +3,9 @@
 
 
 Individual Submission                                      J. Snell, Ed.
-Internet-Draft                                              July 1, 2019
+Internet-Draft                                         November 26, 2019
 Intended status: Standards Track
-Expires: January 2, 2020
+Expires: May 29, 2020
 
 
                               Multiformats
@@ -13,8 +13,8 @@ Expires: January 2, 2020
 
 Abstract
 
-   Defines Multiformats, a collection of dataformats that aim to future-
-   proof systems by adding self-description to format values; and
+   Defines Multiformats, a collection of data formats that aim to
+   future-proof systems by adding self-description to format values; and
    defines the Multihash and Multibase Multiformat data formats.
 
 Status of This Memo
@@ -32,7 +32,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 2, 2020.
+   This Internet-Draft will expire on May 29, 2020.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Snell                    Expires January 2, 2020                [Page 1]
+Snell                     Expires May 29, 2020                  [Page 1]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
 Table of Contents
@@ -78,12 +78,12 @@ Table of Contents
        6.2.1.  Base-Encoding Registration  . . . . . . . . . . . . .  15
        6.2.2.  Initial Contents  . . . . . . . . . . . . . . . . . .  16
    7.  Normative References  . . . . . . . . . . . . . . . . . . . .  17
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  17
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  18
 
 1.  Introduction
 
-   Multiformats are a collection of dataformats that aim to future-proof
-   systems by adding self-description to format values; allowing
+   Multiformats are a collection of data formats that aim to future-
+   proof systems by adding self-description to format values; allowing
    interoperability and protocol agility while avoiding lock in.
 
    The self-describing aspects of the Multiformat values have a few
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Snell                    Expires January 2, 2020                [Page 2]
+Snell                     Expires May 29, 2020                  [Page 2]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    In this document, the key words "MUST", "MUST NOT", "REQUIRED",
@@ -165,9 +165,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 3]
+Snell                     Expires May 29, 2020                  [Page 3]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    varint-terminator = %x00-7f
@@ -179,9 +179,9 @@ Internet-Draft                Multiformats                     July 2019
    Multibase is a format for differentiating outputs from various well-
    established text base-encoding algorithms.
 
-   A multibase consists simply of a single prefix character that
+   A Multibase consists simply of a single prefix character that
    identifies the base-encoding of the remaining characters.  All valid
-   multibase prefix characters are registered in the Multibase Registry.
+   Multibase prefix characters are registered in The Multibase Registry.
 
    The prefix character for each base are selected such that they are
    included in the alphabets of the base they represent.  For example,
@@ -221,23 +221,23 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 4]
+Snell                     Expires May 29, 2020                  [Page 4]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    integer, and the length of the hash function output encoded as an
-   unsigned variable length integer.  All valid multihash function
+   unsigned variable length integer.  All valid Multihash function
    identifiers are registered in the Codec Registry.
 
    Multihash values are byte sequences that MAY be encoded in multiple
    base-encodings including hex, base64, base32, or others.  When
-   representing a multihash using a base-encoding, the Multibase format
+   representing a Multihash using a base-encoding, the Multibase format
    SHOULD be used.
 
 4.1.  Example Multihashes
 
-   Given the sample text "multihash", the following example multihash
+   Given the sample text "multihash", the following example Multihash
    values may be generated:
 
    +--------+-----+----------------------------------------------------+
@@ -277,9 +277,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 5]
+Snell                     Expires May 29, 2020                  [Page 5]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
 6.1.  The Codec Registry
@@ -333,9 +333,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 6]
+Snell                     Expires May 29, 2020                  [Page 6]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    other registrations, the Type field MUST refer to an entry in The
@@ -389,9 +389,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 7]
+Snell                     Expires May 29, 2020                  [Page 7]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | blake2b-8      | multihash   | 0xb201 | Blake2b consists of 64    |
@@ -445,9 +445,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 8]
+Snell                     Expires May 29, 2020                  [Page 8]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | blake2b-376    | multihash   | 0xb22f |                           |
@@ -501,9 +501,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020                [Page 9]
+Snell                     Expires May 29, 2020                  [Page 9]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | blake2s-232    | multihash   | 0xb25d |                           |
@@ -557,9 +557,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020               [Page 10]
+Snell                     Expires May 29, 2020                 [Page 10]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | skein512-72    | multihash   | 0xb329 |                           |
@@ -613,9 +613,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020               [Page 11]
+Snell                     Expires May 29, 2020                 [Page 11]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | skein512-456   | multihash   | 0xb359 |                           |
@@ -669,9 +669,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020               [Page 12]
+Snell                     Expires May 29, 2020                 [Page 12]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | skein1024-312  | multihash   | 0xb387 |                           |
@@ -725,9 +725,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020               [Page 13]
+Snell                     Expires May 29, 2020                 [Page 13]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
    | skein1024-696  | multihash   | 0xb3b7 |                           |
@@ -781,9 +781,9 @@ Internet-Draft                Multiformats                     July 2019
 
 
 
-Snell                    Expires January 2, 2020               [Page 14]
+Snell                     Expires May 29, 2020                 [Page 14]
 
-Internet-Draft                Multiformats                     July 2019
+Internet-Draft                Multiformats                 November 2019
 
 
 6.2.  The Multibase Registry
@@ -826,21 +826,37 @@ Internet-Draft                Multiformats                     July 2019
    o  *Description*: An optional short text description of the base
       encoding.
 
+   o  *Status*: An indicator of the current implementation status of the
+      encoding and prefix.  MUST be one of "draft", "candidate", or
+      "default".
+
    o  *Reference*: A reference to the document that specifies the base
       encoding, preferably including a URI that can be used to retrieve
       a copy of the document.  An indication of the relevant section(s)
       can also be included but is not required.
 
+
+
+Snell                     Expires May 29, 2020                 [Page 15]
+
+Internet-Draft                Multiformats                 November 2019
+
+
+   Each of the Status field values indicates the following meanings:
+
+   o  *draft*: The encoding has been proposed but is not widely
+      implemented and may be removed in the future.
+
+   o  *candidate*: The encoding is mature and widely implemented by many
+      but not all implementations.
+
+   o  *default*: The encoding SHOULD be implemented by all
+      implementations and are widely used.
+
+   The expert(s) can change the Status of a registration at any time.
+
    The expert(s) can define additional fields to be collected in the
    registry.
-
-
-
-
-Snell                    Expires January 2, 2020               [Page 15]
-
-Internet-Draft                Multiformats                     July 2019
-
 
    Registrations SHOULD reference a freely available, stable
    specification.
@@ -855,48 +871,66 @@ Internet-Draft                Multiformats                     July 2019
 
    The initial contents of the Multibase Registry are as follows:
 
-   +-----------------------+------+------------------------------------+
-   | Encoding              | Code | Description                        |
-   +-----------------------+------+------------------------------------+
-   | identity              | 0x00 | 8-bit binary (encoder and decoder  |
-   |                       |      | keeps data unmodified)             |
-   | base2                 | 0    | binary (01010101)                  |
-   | base8                 | 7    | octal                              |
-   | base10                | 9    | decimal                            |
-   | base16                | f    | hexadecimal                        |
-   | base16upper           | F    | hexadecimal                        |
-   | base32hex             | v    | rfc4648 no padding - highest char  |
-   | base32hexupper        | V    | rfc4648 no padding - highest char  |
-   | base32hexpad          | t    | rfc4648 with padding               |
-   | base32hexpadupper     | T    | rfc4648 with padding               |
-   | base32                | b    | rfc4648 no padding                 |
-   | base32upper           | B    | rfc4648 no padding                 |
-   | base32pad             | c    | rfc4648 with padding               |
-   | base32padupper        | C    | rfc4648 with padding               |
-   | base32z               | h    | z-base-32 (used by Tahoe-LAFS)     |
-   | base58flickr          | Z    | base58 flicker                     |
-   | base58btc             | z    | base58 bitcoin                     |
-   | base64                | m    | rfc4648 no padding                 |
-   | base64pad             | M    | rfc4648 with padding - MIME        |
-   |                       |      | encoding                           |
-   | base64url             | u    | rfc4648 no padding                 |
-   | base64urlpad          | U    | rfc4648 with padding               |
-   | base58libp2p-identity | 1    | Base58 encoded identity            |
-   |                       |      | multihashes used by libp2p         |
-   | base58libp2p-sha2     | Q    | Base58 encoded sha2-256            |
-   |                       |      | multihashes used by libp2p         |
-   +-----------------------+------+------------------------------------+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Snell                     Expires May 29, 2020                 [Page 16]
+
+Internet-Draft                Multiformats                 November 2019
+
+
+   +-------------------+------+----------------------------+-----------+
+   | Encoding          | Code | Description                | Status    |
+   +-------------------+------+----------------------------+-----------+
+   | identity          | 0x00 | 8-bit binary (encoder and  | default   |
+   |                   |      | decoder keeps data         |           |
+   |                   |      | unmodified)                |           |
+   | base2             | 0    | binary (01010101)          | candidate |
+   | base8             | 7    | octal                      | draft     |
+   | base10            | 9    | decimal                    | draft     |
+   | base16            | f    | hexadecimal                | default   |
+   | base16upper       | F    | hexadecimal                | default   |
+   | base32hex         | v    | rfc4648 no padding -       | candidate |
+   |                   |      | highest char               |           |
+   | base32hexupper    | V    | rfc4648 no padding -       | candidate |
+   |                   |      | highest char               |           |
+   | base32hexpad      | t    | rfc4648 with padding       | candidate |
+   | base32hexpadupper | T    | rfc4648 with padding       | candidate |
+   | base32            | b    | rfc4648 no padding         | default   |
+   | base32upper       | B    | rfc4648 no padding         | default   |
+   | base32pad         | c    | rfc4648 with padding       | candidate |
+   | base32padupper    | C    | rfc4648 with padding       | candidate |
+   | base32z           | h    | z-base-32 (used by Tahoe-  | draft     |
+   |                   |      | LAFS)                      |           |
+   | base58flickr      | Z    | base58 flicker             | candidate |
+   | base58btc         | z    | base58 bitcoin             | default   |
+   | base64            | m    | rfc4648 no padding         | default   |
+   | base64pad         | M    | rfc4648 with padding -     | candidate |
+   |                   |      | MIME encoding              |           |
+   | base64url         | u    | rfc4648 no padding         | default   |
+   | base64urlpad      | U    | rfc4648 with padding       | default   |
+   +-------------------+------+----------------------------+-----------+
 
    For each of the above entries, this document serves as the reference.
-
-
-
-
-
-Snell                    Expires January 2, 2020               [Page 16]
-
-Internet-Draft                Multiformats                     July 2019
-
 
 7.  Normative References
 
@@ -908,6 +942,17 @@ Internet-Draft                Multiformats                     July 2019
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
+
+
+
+
+
+
+
+Snell                     Expires May 29, 2020                 [Page 17]
+
+Internet-Draft                Multiformats                 November 2019
+
 
    [RFC5234]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
               Specifications: ABNF", STD 68, RFC 5234,
@@ -949,4 +994,15 @@ Author's Address
 
 
 
-Snell                    Expires January 2, 2020               [Page 17]
+
+
+
+
+
+
+
+
+
+
+
+Snell                     Expires May 29, 2020                 [Page 18]
