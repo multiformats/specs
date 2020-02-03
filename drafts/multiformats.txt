@@ -347,7 +347,7 @@ Internet-Draft                Multiformats                 November 2019
    Registrations SHOULD reference a freely available, stable
    specification.
 
-   Note that codecs can be registere by third parties (including the
+   Note that codecs can be registered by third parties (including the
    expert(s)), if the expert(s) determine that an unregistered codec is
    widely deployed and not likely to be registered in a timely manner
    otherwise.  Such registrations still are subject to the requirements
