@@ -3,9 +3,14 @@
 
 
 Individual Submission                                      J. Snell, Ed.
-Internet-Draft                                         November 26, 2019
-Intended status: Standards Track
-Expires: May 29, 2020
+Internet-Draft                                         NearForm Research
+Intended status: Standards Track                                N. Greco
+Expires: August 27, 2020                                        J. Benet
+                                                            D. Dalrymple
+                                                                 D. Dias
+                                                               L. Gierth
+                                                           Protocol Labs
+                                                       February 24, 2020
 
 
                               Multiformats
@@ -32,11 +37,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 29, 2020.
+   This Internet-Draft will expire on August 27, 2020.
 
 Copyright Notice
 
-   Copyright (c) 2019 IETF Trust and the persons identified as the
+   Copyright (c) 2020 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -48,29 +53,24 @@ Copyright Notice
 
 
 
-
-
-
-
-
-Snell                     Expires May 29, 2020                  [Page 1]
+Snell, et al.            Expires August 27, 2020                [Page 1]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Unsigned Variable Length Integer  . . . . . . . . . . . . . .   3
-     2.1.  ABNF Definition . . . . . . . . . . . . . . . . . . . . .   3
+     2.1.  ABNF Definition . . . . . . . . . . . . . . . . . . . . .   4
    3.  Multibase . . . . . . . . . . . . . . . . . . . . . . . . . .   4
      3.1.  Examples  . . . . . . . . . . . . . . . . . . . . . . . .   4
      3.2.  Multibase ABNF  . . . . . . . . . . . . . . . . . . . . .   4
-   4.  Multihash . . . . . . . . . . . . . . . . . . . . . . . . . .   4
+   4.  Multihash . . . . . . . . . . . . . . . . . . . . . . . . . .   5
      4.1.  Example Multihashes . . . . . . . . . . . . . . . . . . .   5
      4.2.  Multihash ABNF  . . . . . . . . . . . . . . . . . . . . .   5
    5.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
      6.1.  The Codec Registry  . . . . . . . . . . . . . . . . . . .   6
        6.1.1.  Codec Registration  . . . . . . . . . . . . . . . . .   6
        6.1.2.  Initial Contents  . . . . . . . . . . . . . . . . . .   7
@@ -78,7 +78,7 @@ Table of Contents
        6.2.1.  Base-Encoding Registration  . . . . . . . . . . . . .  15
        6.2.2.  Initial Contents  . . . . . . . . . . . . . . . . . .  16
    7.  Normative References  . . . . . . . . . . . . . . . . . . . .  17
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  18
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  18
 
 1.  Introduction
 
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Snell                     Expires May 29, 2020                  [Page 2]
+Snell, et al.            Expires August 27, 2020                [Page 2]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
    In this document, the key words "MUST", "MUST NOT", "REQUIRED",
@@ -125,7 +125,7 @@ Internet-Draft                Multiformats                 November 2019
 
    The various Multiformats defined in this specification make use of
    the Unsigned Variable Length Integer encoding defined in Appendix C
-   of the [DWARF3] standard.
+   of the [LEB128] standard.
 
    As suggested by the name, this variable length encoding is only
    capable of representing unsigned integers.  Further, while there is
@@ -145,6 +145,8 @@ Internet-Draft                Multiformats                 November 2019
    Values greater than 127 require two or more bytes as illustrated in
    the examples below.
 
+   Numbers MUST be encoded using the least number of bytes possible.
+
                  +---------+----------------------------+
                  | Integer | Encoding                   |
                  +---------+----------------------------+
@@ -156,19 +158,23 @@ Internet-Draft                Multiformats                 November 2019
                  | 16384   | 10000000 10000000 00000001 |
                  +---------+----------------------------+
 
+
+
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 3]
+
+Internet-Draft                Multiformats                 February 2020
+
+
 2.1.  ABNF Definition
 
    Specifications signal use of the Unsigned Variable Length Encoded
    Integer format by referencing the unsigned-varint ABNF grammar rule
    defined below.
-
-
-
-
-Snell                     Expires May 29, 2020                  [Page 3]
-
-Internet-Draft                Multiformats                 November 2019
-
 
    varint-terminator = %x00-7f
    varint-continuation = %x80-ff
@@ -210,6 +216,16 @@ Internet-Draft                Multiformats                 November 2019
    base-identifier = <ascii character>
    multibase = base-identifier {base-encoded-data}
 
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 4]
+
+Internet-Draft                Multiformats                 February 2020
+
+
 4.  Multihash
 
    Multihash is a format for differentiating outputs from various well-
@@ -218,14 +234,6 @@ Internet-Draft                Multiformats                 November 2019
 
    Multihash values encode the hash function output prefixed by an id
    identifying the hash function encoded as an unsigned variable length
-
-
-
-Snell                     Expires May 29, 2020                  [Page 4]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    integer, and the length of the hash function output encoded as an
    unsigned variable length integer.  All valid Multihash function
    identifiers are registered in the Codec Registry.
@@ -265,22 +273,19 @@ Internet-Draft                Multiformats                 November 2019
    There are no additional security considerations introduced by the use
    of Multiformat data formats.  Note, however, that various hash
    functions that may be used with multiformats may be vulnerable to
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 5]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    various known security issues and limitations (e.g. sha1) and thus
    SHOULD be avoided.
 
 6.  IANA Considerations
-
-
-
-
-
-
-
-
-Snell                     Expires May 29, 2020                  [Page 5]
-
-Internet-Draft                Multiformats                 November 2019
-
 
 6.1.  The Codec Registry
 
@@ -324,20 +329,20 @@ Internet-Draft                Multiformats                 November 2019
 
    o  *Reference*: A reference to the document that specifies the codec,
       preferably including a URI that can be used to retrieve a copy of
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 6]
+
+Internet-Draft                Multiformats                 February 2020
+
+
       the document.  An indication of the relevant section(s) can also
       be included but is not required.
 
    Multiformat data formats themselves MAY be registered within The
    Codec Registry using a Type field value of "multiformat".  For all
-
-
-
-
-Snell                     Expires May 29, 2020                  [Page 6]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    other registrations, the Type field MUST refer to an entry in The
    Codec Registry whose Type is "multiformat".
 
@@ -381,19 +386,19 @@ Internet-Draft                Multiformats                 November 2019
    | multicodec     | multiformat | 0x30   |                           |
    | multihash      | multiformat | 0x31   |                           |
    | multibase      | multiformat | 0x33   |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 7]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | dbl-sha2-256   | multihash   | 0x56   |                           |
    | md4            | multihash   | 0xd4   |                           |
    | md5            | multihash   | 0xd5   |                           |
    | bmt            | multihash   | 0xd6   | Binary Merkle Tree Hash   |
    | x11            | multihash   | 0x1100 |                           |
-
-
-
-Snell                     Expires May 29, 2020                  [Page 7]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | blake2b-8      | multihash   | 0xb201 | Blake2b consists of 64    |
    |                |             |        | output lengths that give  |
    |                |             |        | different hashes          |
@@ -437,19 +442,19 @@ Internet-Draft                Multiformats                 November 2019
    | blake2b-312    | multihash   | 0xb227 |                           |
    | blake2b-320    | multihash   | 0xb228 |                           |
    | blake2b-328    | multihash   | 0xb229 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 8]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | blake2b-336    | multihash   | 0xb22a |                           |
    | blake2b-344    | multihash   | 0xb22b |                           |
    | blake2b-352    | multihash   | 0xb22c |                           |
    | blake2b-360    | multihash   | 0xb22d |                           |
    | blake2b-368    | multihash   | 0xb22e |                           |
-
-
-
-Snell                     Expires May 29, 2020                  [Page 8]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | blake2b-376    | multihash   | 0xb22f |                           |
    | blake2b-384    | multihash   | 0xb230 |                           |
    | blake2b-392    | multihash   | 0xb231 |                           |
@@ -493,19 +498,19 @@ Internet-Draft                Multiformats                 November 2019
    | blake2s-168    | multihash   | 0xb255 |                           |
    | blake2s-176    | multihash   | 0xb256 |                           |
    | blake2s-184    | multihash   | 0xb257 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 9]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | blake2s-192    | multihash   | 0xb258 |                           |
    | blake2s-200    | multihash   | 0xb259 |                           |
    | blake2s-208    | multihash   | 0xb25a |                           |
    | blake2s-216    | multihash   | 0xb25b |                           |
    | blake2s-224    | multihash   | 0xb25c |                           |
-
-
-
-Snell                     Expires May 29, 2020                  [Page 9]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | blake2s-232    | multihash   | 0xb25d |                           |
    | blake2s-240    | multihash   | 0xb25e |                           |
    | blake2s-248    | multihash   | 0xb25f |                           |
@@ -549,19 +554,19 @@ Internet-Draft                Multiformats                 November 2019
    |                |             |        | different hashes          |
    | skein512-16    | multihash   | 0xb322 |                           |
    | skein512-24    | multihash   | 0xb323 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020               [Page 10]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | skein512-32    | multihash   | 0xb324 |                           |
    | skein512-40    | multihash   | 0xb325 |                           |
    | skein512-48    | multihash   | 0xb326 |                           |
    | skein512-56    | multihash   | 0xb327 |                           |
    | skein512-64    | multihash   | 0xb328 |                           |
-
-
-
-Snell                     Expires May 29, 2020                 [Page 10]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | skein512-72    | multihash   | 0xb329 |                           |
    | skein512-80    | multihash   | 0xb32a |                           |
    | skein512-88    | multihash   | 0xb32b |                           |
@@ -605,19 +610,19 @@ Internet-Draft                Multiformats                 November 2019
    | skein512-392   | multihash   | 0xb351 |                           |
    | skein512-400   | multihash   | 0xb352 |                           |
    | skein512-408   | multihash   | 0xb353 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020               [Page 11]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | skein512-416   | multihash   | 0xb354 |                           |
    | skein512-424   | multihash   | 0xb355 |                           |
    | skein512-432   | multihash   | 0xb356 |                           |
    | skein512-440   | multihash   | 0xb357 |                           |
    | skein512-448   | multihash   | 0xb358 |                           |
-
-
-
-Snell                     Expires May 29, 2020                 [Page 11]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | skein512-456   | multihash   | 0xb359 |                           |
    | skein512-464   | multihash   | 0xb35a |                           |
    | skein512-472   | multihash   | 0xb35b |                           |
@@ -661,19 +666,19 @@ Internet-Draft                Multiformats                 November 2019
    | skein1024-248  | multihash   | 0xb37f |                           |
    | skein1024-256  | multihash   | 0xb380 |                           |
    | skein1024-264  | multihash   | 0xb381 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020               [Page 12]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | skein1024-272  | multihash   | 0xb382 |                           |
    | skein1024-280  | multihash   | 0xb383 |                           |
    | skein1024-288  | multihash   | 0xb384 |                           |
    | skein1024-296  | multihash   | 0xb385 |                           |
    | skein1024-304  | multihash   | 0xb386 |                           |
-
-
-
-Snell                     Expires May 29, 2020                 [Page 12]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | skein1024-312  | multihash   | 0xb387 |                           |
    | skein1024-320  | multihash   | 0xb388 |                           |
    | skein1024-328  | multihash   | 0xb389 |                           |
@@ -717,19 +722,19 @@ Internet-Draft                Multiformats                 November 2019
    | skein1024-632  | multihash   | 0xb3af |                           |
    | skein1024-640  | multihash   | 0xb3b0 |                           |
    | skein1024-648  | multihash   | 0xb3b1 |                           |
+
+
+
+Snell, et al.            Expires August 27, 2020               [Page 13]
+
+Internet-Draft                Multiformats                 February 2020
+
+
    | skein1024-656  | multihash   | 0xb3b2 |                           |
    | skein1024-664  | multihash   | 0xb3b3 |                           |
    | skein1024-672  | multihash   | 0xb3b4 |                           |
    | skein1024-680  | multihash   | 0xb3b5 |                           |
    | skein1024-688  | multihash   | 0xb3b6 |                           |
-
-
-
-Snell                     Expires May 29, 2020                 [Page 13]
-
-Internet-Draft                Multiformats                 November 2019
-
-
    | skein1024-696  | multihash   | 0xb3b7 |                           |
    | skein1024-704  | multihash   | 0xb3b8 |                           |
    | skein1024-712  | multihash   | 0xb3b9 |                           |
@@ -774,17 +779,14 @@ Internet-Draft                Multiformats                 November 2019
    | skein1024-1024 | multihash   | 0xb3e0 |                           |
    +----------------+-------------+--------+---------------------------+
 
-   For each of the above entries, this document serves as the reference.
 
 
-
-
-
-
-Snell                     Expires May 29, 2020                 [Page 14]
+Snell, et al.            Expires August 27, 2020               [Page 14]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
+
+   For each of the above entries, this document serves as the reference.
 
 6.2.  The Multibase Registry
 
@@ -832,15 +834,16 @@ Internet-Draft                Multiformats                 November 2019
 
    o  *Reference*: A reference to the document that specifies the base
       encoding, preferably including a URI that can be used to retrieve
+
+
+
+Snell, et al.            Expires August 27, 2020               [Page 15]
+
+Internet-Draft                Multiformats                 February 2020
+
+
       a copy of the document.  An indication of the relevant section(s)
       can also be included but is not required.
-
-
-
-Snell                     Expires May 29, 2020                 [Page 15]
-
-Internet-Draft                Multiformats                 November 2019
-
 
    Each of the Status field values indicates the following meanings:
 
@@ -890,12 +893,9 @@ Internet-Draft                Multiformats                 November 2019
 
 
 
-
-
-
-Snell                     Expires May 29, 2020                 [Page 16]
+Snell, et al.            Expires August 27, 2020               [Page 16]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
    +-------------------+------+----------------------------+-----------+
@@ -934,7 +934,7 @@ Internet-Draft                Multiformats                 November 2019
 
 7.  Normative References
 
-   [DWARF3]   DWARF Debugging Information Format Workgroup, "DWARF
+   [LEB128]   DWARF Debugging Information Format Workgroup, "DWARF
               Debugging Information Format", December 2005,
               <http://dwarfstd.org/doc/Dwarf3.pdf>.
 
@@ -949,9 +949,9 @@ Internet-Draft                Multiformats                 November 2019
 
 
 
-Snell                     Expires May 29, 2020                 [Page 17]
+Snell, et al.            Expires August 27, 2020               [Page 17]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
    [RFC5234]  Crocker, D., Ed. and P. Overell, "Augmented BNF for Syntax
@@ -964,45 +964,45 @@ Internet-Draft                Multiformats                 November 2019
               RFC 8126, DOI 10.17487/RFC8126, June 2017,
               <https://www.rfc-editor.org/info/rfc8126>.
 
-Author's Address
+Authors' Addresses
 
    James M Snell (editor)
+   NearForm Research
 
    Email: jasnell@gmail.com
 
 
+   Nicola Greco
+   Protocol Labs
+
+   Email: me@nicola.io
+
+
+   Juan Benet
+   Protocol Labs
+
+   Email: juan@benet.ai
+
+
+   David A. Dalrymple
+   Protocol Labs
+
+   Email: david.dalrymple@protocol.ai
+
+
+   David Dias
+   Protocol Labs
+
+   Email: mail@daviddias.me
+
+
+   Lars Gierth
+   Protocol Labs
+
+   Email: lars.gierth@gmail.com
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Snell                     Expires May 29, 2020                 [Page 18]
+Snell, et al.            Expires August 27, 2020               [Page 18]

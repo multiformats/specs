@@ -19,12 +19,57 @@
             surname="Snell"
             fullname="James M Snell"
             role="editor">
+      <organization>NearForm Research</organization>
       <address>
         <email>jasnell@gmail.com</email>
       </address>
     </author>
 
-    <date month="November" year="2019" />
+    <author initials="N."
+            surname="Greco"
+            fullname="Nicola Greco">
+      <organization>Protocol Labs</organization>
+      <address>
+        <email>me@nicola.io</email>
+      </address>
+    </author>
+    <author initials="J."
+            surname="Benet"
+            fullname="Juan Benet">
+      <organization>Protocol Labs</organization>
+      <address>
+        <email>juan@benet.ai</email>
+      </address>
+    </author>
+
+    <author initials="D.A."
+            surname="Dalrymple"
+            fullname="David A. Dalrymple">
+      <organization>Protocol Labs</organization>
+      <address>
+        <email>david.dalrymple@protocol.ai</email>
+      </address>
+    </author>
+
+    <author initials="D."
+            surname="Dias"
+            fullname="David Dias">
+      <organization>Protocol Labs</organization>
+      <address>
+        <email>mail@daviddias.me</email>
+      </address>
+    </author>
+
+    <author initials="L."
+            surname="Gierth"
+            fullname="Lars Gierth">
+      <organization>Protocol Labs</organization>
+      <address>
+        <email>lars.gierth@gmail.com</email>
+      </address>
+    </author>
+
+    <date month="February" year="2020" />
 
     <area>Applications</area>
     <workgroup>Individual Submission</workgroup>
@@ -33,7 +78,8 @@
 
     <abstract>
       <t>
-        TBD
+        This document defines additional registrations for the
+        Multiformats Codec Registry.
       </t>
     </abstract>
 

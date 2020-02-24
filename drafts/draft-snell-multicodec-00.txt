@@ -3,9 +3,14 @@
 
 
 Individual Submission                                      J. Snell, Ed.
-Internet-Draft                                         November 26, 2019
-Intended status: Standards Track
-Expires: May 29, 2020
+Internet-Draft                                         NearForm Research
+Intended status: Standards Track                                N. Greco
+Expires: August 27, 2020                                        J. Benet
+                                                            D. Dalrymple
+                                                                 D. Dias
+                                                               L. Gierth
+                                                           Protocol Labs
+                                                       February 24, 2020
 
 
                Additional Multiformat Codec Registrations
@@ -13,7 +18,8 @@ Expires: May 29, 2020
 
 Abstract
 
-   TBD
+   This document defines additional registrations for the Multiformats
+   Codec Registry.
 
 Status of This Memo
 
@@ -30,11 +36,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 29, 2020.
+   This Internet-Draft will expire on August 27, 2020.
 
 Copyright Notice
 
-   Copyright (c) 2019 IETF Trust and the persons identified as the
+   Copyright (c) 2020 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -47,15 +53,9 @@ Copyright Notice
 
 
 
-
-
-
-
-
-
-Snell                     Expires May 29, 2020                  [Page 1]
+Snell, et al.            Expires August 27, 2020                [Page 1]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
 Table of Contents
@@ -65,7 +65,7 @@ Table of Contents
    3.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
    4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
    5.  Normative References  . . . . . . . . . . . . . . . . . . . .   5
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   5
 
 1.  Introduction
 
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Snell                     Expires May 29, 2020                  [Page 2]
+Snell, et al.            Expires August 27, 2020                [Page 2]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
    | git-raw            | ipld        | 0x78     | Raw Git object      |
@@ -165,9 +165,9 @@ Internet-Draft                Multiformats                 November 2019
 
 
 
-Snell                     Expires May 29, 2020                  [Page 3]
+Snell, et al.            Expires August 27, 2020                [Page 3]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
    | swarm-manifest     | ipld        | 0xfa     | Swarm Manifest      |
@@ -221,9 +221,9 @@ Internet-Draft                Multiformats                 November 2019
 
 
 
-Snell                     Expires May 29, 2020                  [Page 4]
+Snell, et al.            Expires August 27, 2020                [Page 4]
 
-Internet-Draft                Multiformats                 November 2019
+Internet-Draft                Multiformats                 February 2020
 
 
 3.  Security Considerations
@@ -241,13 +241,51 @@ Internet-Draft                Multiformats                 November 2019
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
-Author's Address
+Authors' Addresses
 
    James M Snell (editor)
+   NearForm Research
 
    Email: jasnell@gmail.com
 
 
+   Nicola Greco
+   Protocol Labs
+
+   Email: me@nicola.io
+
+
+   Juan Benet
+   Protocol Labs
+
+   Email: juan@benet.ai
+
+
+   David A. Dalrymple
+   Protocol Labs
+
+   Email: david.dalrymple@protocol.ai
+
+
+   David Dias
+   Protocol Labs
+
+   Email: mail@daviddias.me
+
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 5]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+   Lars Gierth
+   Protocol Labs
+
+   Email: lars.gierth@gmail.com
 
 
 
@@ -277,4 +315,22 @@ Author's Address
 
 
 
-Snell                     Expires May 29, 2020                  [Page 5]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 6]
