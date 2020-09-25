@@ -1,0 +1,336 @@
+
+
+
+
+Individual Submission                                      J. Snell, Ed.
+Internet-Draft                                         NearForm Research
+Intended status: Standards Track                                N. Greco
+Expires: August 27, 2020                                        J. Benet
+                                                            D. Dalrymple
+                                                                 D. Dias
+                                                               L. Gierth
+                                                           Protocol Labs
+                                                       February 24, 2020
+
+
+               Additional Multiformat Codec Registrations
+                       draft-snell-multicodec-00
+
+Abstract
+
+   This document defines additional registrations for the Multiformats
+   Codec Registry.
+
+Status of This Memo
+
+   This Internet-Draft is submitted to IETF in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on August 27, 2020.
+
+Copyright Notice
+
+   Copyright (c) 2020 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 1]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Codec Registrations . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
+   4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
+   5.  Normative References  . . . . . . . . . . . . . . . . . . . .   5
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   5
+
+1.  Introduction
+
+   TBD
+
+   In this document, the key words "MUST", "MUST NOT", "REQUIRED",
+   "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY",
+   and "OPTIONAL" are to be interpreted as described in [RFC2119].
+
+2.  Codec Registrations
+
+   +--------------------+-------------+----------+---------------------+
+   | Name               | Tag         | Code     | Description         |
+   +--------------------+-------------+----------+---------------------+
+   | ip4                | multiaddr   | 0x04     |                     |
+   | tcp                | multiaddr   | 0x06     |                     |
+   | dccp               | multiaddr   | 0x21     |                     |
+   | ip6                | multiaddr   | 0x29     |                     |
+   | ip6zone            | multiaddr   | 0x2a     |                     |
+   | path               | namespace   | 0x2f     | Namespace for       |
+   |                    |             |          | string paths.       |
+   |                    |             |          | Corresponds to / in |
+   |                    |             |          | ASCII.              |
+   | multiaddr          | multiformat | 0x32     |                     |
+   | dns                | multiaddr   | 0x35     |                     |
+   | dns4               | multiaddr   | 0x36     |                     |
+   | dns6               | multiaddr   | 0x37     |                     |
+   | dnsaddr            | multiaddr   | 0x38     |                     |
+   | protobuf           | serializati | 0x50     | Protocol Buffers    |
+   |                    | on          |          |                     |
+   | cbor               | serializati | 0x51     | CBOR                |
+   |                    | on          |          |                     |
+   | raw                | ipld        | 0x55     | raw binary          |
+   | rlp                | serializati | 0x60     | recursive length    |
+   |                    | on          |          | prefix              |
+   | bencode            | serializati | 0x63     | bencode             |
+   |                    | on          |          |                     |
+   | dag-pb             | ipld        | 0x70     | MerkleDAG protobuf  |
+   | dag-cbor           | ipld        | 0x71     | MerkleDAG cbor      |
+   | libp2p-key         | ipld        | 0x72     | Libp2p Public Key   |
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 2]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+   | git-raw            | ipld        | 0x78     | Raw Git object      |
+   | torrent-info       | ipld        | 0x7b     | Torrent file info   |
+   |                    |             |          | field (bencoded)    |
+   | torrent-file       | ipld        | 0x7c     | Torrent file        |
+   |                    |             |          | (bencoded)          |
+   | leofcoin-block     | ipld        | 0x81     | Leofcoin Block      |
+   | leofcoin-tx        | ipld        | 0x82     | Leofcoin            |
+   |                    |             |          | Transaction         |
+   | leofcoin-pr        | ipld        | 0x83     | Leofcoin Peer       |
+   |                    |             |          | Reputation          |
+   | sctp               | multiaddr   | 0x84     |                     |
+   | eth-block          | ipld        | 0x90     | Ethereum Block      |
+   |                    |             |          | (RLP)               |
+   | eth-block-list     | ipld        | 0x91     | Ethereum Block List |
+   |                    |             |          | (RLP)               |
+   | eth-tx-trie        | ipld        | 0x92     | Ethereum            |
+   |                    |             |          | Transaction Trie    |
+   |                    |             |          | (Eth-Trie)          |
+   | eth-tx             | ipld        | 0x93     | Ethereum            |
+   |                    |             |          | Transaction (RLP)   |
+   | eth-tx-receipt-    | ipld        | 0x94     | Ethereum            |
+   | trie               |             |          | Transaction Receipt |
+   |                    |             |          | Trie (Eth-Trie)     |
+   | eth-tx-receipt     | ipld        | 0x95     | Ethereum            |
+   |                    |             |          | Transaction Receipt |
+   |                    |             |          | (RLP)               |
+   | eth-state-trie     | ipld        | 0x96     | Ethereum State Trie |
+   |                    |             |          | (Eth-Secure-Trie)   |
+   | eth-account-       | ipld        | 0x97     | Ethereum Account    |
+   | snapshot           |             |          | Snapshot (RLP)      |
+   | eth-storage-trie   | ipld        | 0x98     | Ethereum Contract   |
+   |                    |             |          | Storage Trie (Eth-  |
+   |                    |             |          | Secure-Trie)        |
+   | bitcoin-block      | ipld        | 0xb0     | Bitcoin Block       |
+   | bitcoin-tx         | ipld        | 0xb1     | Bitcoin Tx          |
+   | zcash-block        | ipld        | 0xc0     | Zcash Block         |
+   | zcash-tx           | ipld        | 0xc1     | Zcash Tx            |
+   | stellar-block      | ipld        | 0xd0     | Stellar Block       |
+   | stellar-tx         | ipld        | 0xd1     | Stellar Tx          |
+   | decred-block       | ipld        | 0xe0     | Decred Block        |
+   | decred-tx          | ipld        | 0xe1     | Decred Tx           |
+   | ipld-ns            | namespace   | 0xe2     | IPLD path           |
+   | ipfs-ns            | namespace   | 0xe3     | IPFS path           |
+   | swarm-ns           | namespace   | 0xe4     | Swarm path          |
+   | ipns-ns            | namespace   | 0xe5     | IPNS path           |
+   | ed25519-pub        | key         | 0xed     | Ed25519 public key  |
+   | dash-block         | ipld        | 0xf0     | Dash Block          |
+   | dash-tx            | ipld        | 0xf1     | Dash Tx             |
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 3]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+   | swarm-manifest     | ipld        | 0xfa     | Swarm Manifest      |
+   | swarm-feed         | ipld        | 0xfb     | Swarm Feed          |
+   | udp                | multiaddr   | 0x0111   |                     |
+   | p2p-webrtc-star    | multiaddr   | 0x0113   |                     |
+   | p2p-webrtc-direct  | multiaddr   | 0x0114   |                     |
+   | p2p-stardust       | multiaddr   | 0x0115   |                     |
+   | p2p-circuit        | multiaddr   | 0x0122   |                     |
+   | dag-json           | ipld        | 0x0129   | MerkleDAG json      |
+   | udt                | multiaddr   | 0x012d   |                     |
+   | utp                | multiaddr   | 0x012e   |                     |
+   | unix               | multiaddr   | 0x0190   |                     |
+   | p2p                | multiaddr   | 0x01a5   | libp2p              |
+   | ipfs               | multiaddr   | 0x01a5   | libp2p (deprecated) |
+   | https              | multiaddr   | 0x01bb   |                     |
+   | onion              | multiaddr   | 0x01bc   |                     |
+   | onion3             | multiaddr   | 0x01bd   |                     |
+   | garlic64           | multiaddr   | 0x01be   | I2P base64 (raw     |
+   |                    |             |          | public key)         |
+   | garlic32           | multiaddr   | 0x01bf   | I2P base32 (hashed  |
+   |                    |             |          | public key or       |
+   |                    |             |          | encoded public key/ |
+   |                    |             |          | checksum+optional   |
+   |                    |             |          | secret)             |
+   | quic               | multiaddr   | 0x01cc   |                     |
+   | ws                 | multiaddr   | 0x01dd   |                     |
+   | wss                | multiaddr   | 0x01de   |                     |
+   | p2p-websocket-star | multiaddr   | 0x01df   |                     |
+   | http               | multiaddr   | 0x01e0   |                     |
+   | holochain-adr-v0   | holochain   | 0x807124 | Holochain v0        |
+   |                    |             |          | address    + 8 R-S  |
+   |                    |             |          | (63 x Base-32)      |
+   | holochain-adr-v1   | holochain   | 0x817124 | Holochain v1        |
+   |                    |             |          | address    + 8 R-S  |
+   |                    |             |          | (63 x Base-32)      |
+   | holochain-key-v0   | holochain   | 0x947124 | Holochain v0 public |
+   |                    |             |          | key + 8 R-S (63 x   |
+   |                    |             |          | Base-32)            |
+   | holochain-key-v1   | holochain   | 0x957124 | Holochain v1 public |
+   |                    |             |          | key + 8 R-S (63 x   |
+   |                    |             |          | Base-32)            |
+   | holochain-sig-v0   | holochain   | 0xa27124 | Holochain v0        |
+   |                    |             |          | signature  + 8 R-S  |
+   |                    |             |          | (63 x Base-32)      |
+   | holochain-sig-v1   | holochain   | 0xa37124 | Holochain v1        |
+   |                    |             |          | signature  + 8 R-S  |
+   |                    |             |          | (63 x Base-32)      |
+   +--------------------+-------------+----------+---------------------+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 4]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+3.  Security Considerations
+
+   TBD
+
+4.  IANA Considerations
+
+   TBD
+
+5.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+Authors' Addresses
+
+   James M Snell (editor)
+   NearForm Research
+
+   Email: jasnell@gmail.com
+
+
+   Nicola Greco
+   Protocol Labs
+
+   Email: me@nicola.io
+
+
+   Juan Benet
+   Protocol Labs
+
+   Email: juan@benet.ai
+
+
+   David A. Dalrymple
+   Protocol Labs
+
+   Email: david.dalrymple@protocol.ai
+
+
+   David Dias
+   Protocol Labs
+
+   Email: mail@daviddias.me
+
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 5]
+
+Internet-Draft                Multiformats                 February 2020
+
+
+   Lars Gierth
+   Protocol Labs
+
+   Email: lars.gierth@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Snell, et al.            Expires August 27, 2020                [Page 6]
