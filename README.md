@@ -11,7 +11,7 @@ This repository is a **work in progress**.
 
 ## Maintainers
 
-- [@nicola](https://github.com/@nicola)
+- [@nicola](https://github.com/nicola)
 
 ## Contribute
 
